@@ -11,26 +11,16 @@ import 'package:flutter/services.dart';
 import 'ffi.dart';
 
 class CameraImagePainter extends CustomPainter {
-
   late dartui.Image _lastImage;
   bool _initialized = false;
   int _width = 0, _height = 0;
-  Uint8List? _lastYs;
-  CorrelationFlow? _shift;
 
   Future<void> setImage(CameraImage img) async {
-    Uint8List ys = img.planes[0].bytes;
-    if (_lastYs != null) {
-      _shift = await api.getCorrelationFlow(prevYs: _lastYs!, currentYs: ys, width: img.width, height: img.height);
-    }
-    _lastYs = ys;
     _lastImage = await makeColorFrom(img);
     _width = _lastImage.width;
     _height = _lastImage.height;
     _initialized = true;
   }
-
-  CorrelationFlow? getShift() {return _shift;}
 
   @override
   void paint(Canvas canvas, Size size) {
