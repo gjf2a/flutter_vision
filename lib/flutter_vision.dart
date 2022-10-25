@@ -32,6 +32,7 @@ class CameraImagePainter extends CustomPainter {
   }
 
   double fps() {return _fps;}
+  int frameCount() {return _frameCount;}
 
   @override
   void paint(Canvas canvas, Size size) {
