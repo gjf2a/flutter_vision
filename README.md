@@ -16,7 +16,7 @@ This package is, for now, under heavy development and highly unstable.
 * `import 'package:flutter_vision/flutter_vision.dart';`
 
 ### `pubspec.yaml`
-```
+```yaml
 dependencies:
   flutter_vision:
     git: https://github.com/gjf2a/flutter_vision
