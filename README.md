@@ -1,27 +1,36 @@
-<!--
-This README describes the package. If you publish this package to pub.dev,
-this README's contents appear on the landing page for your package.
+# flutter_vision
 
-For information about how to write a good package README, see the guide for
-[writing package pages](https://dart.dev/guides/libraries/writing-package-pages).
-
-For general information about developing packages, see the Dart guide for
-[creating packages](https://dart.dev/guides/libraries/create-library-packages)
-and the Flutter guide for
-[developing packages and plugins](https://flutter.dev/developing-packages).
--->
-
-TODO: Put a short description of the package here that helps potential users
-know whether this package might be useful for them.
+This library is designed to enable Computer Vision in a Flutter application by means of a Rust
+back-end native library.
 
 ## Features
 
-TODO: List what your package can do. Maybe include images, gifs, or videos.
+This package is, for now, under heavy development and highly unstable. 
+
+* Convert Flutter camera images to RGB or grayscale.
+* Perform optic flow calculations to estimate trajectory.
 
 ## Getting started
 
-TODO: List prerequisites and provide or point to information on how to
-start using the package.
+* This package assumes use of the [camera](https://pub.dev/packages/camera) plugin.
+* `import 'package:flutter_vision/flutter_vision.dart';`
+
+### `pubspec.yaml`
+```
+dependencies:
+  flutter_vision:
+    git: https://github.com/gjf2a/flutter_vision
+```
+
+### Using with Android
+
+* Copy the [Android Native Libraries](https://github.com/gjf2a/flutter_vision/tree/main/android/app/src/main/jniLibs) to `android/app/src/main/jniLibs`.
+* So far, I have built `arm64-v8a` and `armeabi-v7a`. I will build others as the need arises.
+* The ultimate goal is to find a way to package these automatically, but I haven't figured out how to do that as of yet.
+
+### Using with iOS
+
+So far, I have not yet compiled the Rust code for iOS, so this is a work-in-progress.
 
 ## Usage
 
