@@ -25,7 +25,7 @@ dependencies:
 ### Using with Android
 
 * Copy the [Android Native Libraries](https://github.com/gjf2a/flutter_vision/tree/main/android/app/src/main/jniLibs) to `android/app/src/main/jniLibs`.
-* So far, I have built `arm64-v8a` and `armeabi-v7a`. I will build others as the need arises.
+* So far, I have built `aarch64-linux-android` and `armv7-linux-androideabi`. I will build others as the need arises.
 * The ultimate goal is to find a way to package these automatically, but I haven't figured out how to do that as of yet.
 
 ### Using with iOS
