@@ -14,13 +14,24 @@ class CameraImagePainter extends CustomPainter {
   late dartui.Image _lastImage;
   bool _initialized = false;
   int _width = 0, _height = 0;
+  DateTime _start = DateTime.now();
+  double _fps = 0.0;
+  int _frameCount = 0;
 
   Future<void> setImage(CameraImage img) async {
+    if (!_initialized) {
+      _start = DateTime.now();
+      _initialized = true;
+    }
     _lastImage = await makeColorFrom(img);
     _width = _lastImage.width;
     _height = _lastImage.height;
-    _initialized = true;
+    _frameCount += 1;
+    Duration elapsed = DateTime.now().difference(_start);
+    _fps = _frameCount / elapsed.inSeconds;
   }
+
+  double fps() {return _fps;}
 
   @override
   void paint(Canvas canvas, Size size) {
