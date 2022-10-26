@@ -42,6 +42,11 @@ abstract class Native {
       {required String incomingData, dynamic hint});
 
   FlutterRustBridgeTaskConstMeta get kProcessSensorDataConstMeta;
+
+  Future<SensorData> parseSensorData(
+      {required String incomingData, dynamic hint});
+
+  FlutterRustBridgeTaskConstMeta get kParseSensorDataConstMeta;
 }
 
 class CorrelationFlow {
@@ -51,5 +56,23 @@ class CorrelationFlow {
   CorrelationFlow({
     required this.dx,
     required this.dy,
+  });
+}
+
+class SensorData {
+  final int sonarFront;
+  final int sonarLeft;
+  final int sonarRight;
+  final int motorLeft;
+  final int motorRight;
+  final int actionTag;
+
+  SensorData({
+    required this.sonarFront,
+    required this.sonarLeft,
+    required this.sonarRight,
+    required this.motorLeft,
+    required this.motorRight,
+    required this.actionTag,
   });
 }

@@ -66,3 +66,37 @@ Future<dartui.Image> makeImageFrom(Uint8List intensities, int width, int height)
   frame.image.dispose();
   return result;
 }
+
+enum WheelAction {
+  forward, backward, stop
+}
+
+WheelAction fromIntLeft(int code) {
+  if (code < 19) {
+    return WheelAction.backward;
+  } else if (code < 29) {
+    return WheelAction.stop;
+  } else {
+    return WheelAction.forward;
+  }
+}
+
+WheelAction fromIntRight(int code) {
+  int digit = code % 10;
+  if (digit == 9) {
+    return WheelAction.backward;
+  } else if (digit == 0) {
+    return WheelAction.stop;
+  } else {
+    return WheelAction.forward;
+  }
+}
+
+class RobotState {
+  final WheelAction left;
+  final WheelAction right;
+
+  RobotState({required this.left, required this.right});
+
+  RobotState.decode(int code) : left = fromIntLeft(code), right = fromIntRight(code);
+}

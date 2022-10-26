@@ -136,6 +136,23 @@ class NativeImpl implements Native {
         argNames: ["incomingData"],
       );
 
+  Future<SensorData> parseSensorData(
+          {required String incomingData, dynamic hint}) =>
+      _platform.executeNormal(FlutterRustBridgeTask(
+        callFfi: (port_) => _platform.inner.wire_parse_sensor_data(
+            port_, _platform.api2wire_String(incomingData)),
+        parseSuccessData: _wire2api_sensor_data,
+        constMeta: kParseSensorDataConstMeta,
+        argValues: [incomingData],
+        hint: hint,
+      ));
+
+  FlutterRustBridgeTaskConstMeta get kParseSensorDataConstMeta =>
+      const FlutterRustBridgeTaskConstMeta(
+        debugName: "parse_sensor_data",
+        argNames: ["incomingData"],
+      );
+
 // Section: wire2api
 
   String _wire2api_String(dynamic raw) {
@@ -158,6 +175,24 @@ class NativeImpl implements Native {
 
   int _wire2api_i16(dynamic raw) {
     return raw as int;
+  }
+
+  int _wire2api_i64(dynamic raw) {
+    return castInt(raw);
+  }
+
+  SensorData _wire2api_sensor_data(dynamic raw) {
+    final arr = raw as List<dynamic>;
+    if (arr.length != 6)
+      throw Exception('unexpected arr length: expect 6 but see ${arr.length}');
+    return SensorData(
+      sonarFront: _wire2api_i64(arr[0]),
+      sonarLeft: _wire2api_i64(arr[1]),
+      sonarRight: _wire2api_i64(arr[2]),
+      motorLeft: _wire2api_i64(arr[3]),
+      motorRight: _wire2api_i64(arr[4]),
+      actionTag: _wire2api_i64(arr[5]),
+    );
   }
 
   int _wire2api_u8(dynamic raw) {
@@ -359,6 +394,23 @@ class NativeWire implements FlutterRustBridgeWireBase {
           ffi.Void Function(ffi.Int64,
               ffi.Pointer<wire_uint_8_list>)>>('wire_process_sensor_data');
   late final _wire_process_sensor_data = _wire_process_sensor_dataPtr
+      .asFunction<void Function(int, ffi.Pointer<wire_uint_8_list>)>();
+
+  void wire_parse_sensor_data(
+    int port_,
+    ffi.Pointer<wire_uint_8_list> incoming_data,
+  ) {
+    return _wire_parse_sensor_data(
+      port_,
+      incoming_data,
+    );
+  }
+
+  late final _wire_parse_sensor_dataPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Void Function(ffi.Int64,
+              ffi.Pointer<wire_uint_8_list>)>>('wire_parse_sensor_data');
+  late final _wire_parse_sensor_data = _wire_parse_sensor_dataPtr
       .asFunction<void Function(int, ffi.Pointer<wire_uint_8_list>)>();
 
   ffi.Pointer<wire_uint_8_list> new_uint_8_list_0(
