@@ -99,4 +99,8 @@ class RobotState {
   RobotState({required this.left, required this.right});
 
   RobotState.decode(int code) : left = fromIntLeft(code), right = fromIntRight(code);
+
+  bool straight() {
+    return left == WheelAction.forward && right == WheelAction.forward;
+  }
 }
