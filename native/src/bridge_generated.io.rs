@@ -40,6 +40,21 @@ pub extern "C" fn wire_get_correlation_flow(
     wire_get_correlation_flow_impl(port_, prev_ys, current_ys, width, height)
 }
 
+#[no_mangle]
+pub extern "C" fn wire_reset_position_estimate(port_: i64) {
+    wire_reset_position_estimate_impl(port_)
+}
+
+#[no_mangle]
+pub extern "C" fn wire_process_sensor_data(port_: i64, incoming_data: *mut wire_uint_8_list) {
+    wire_process_sensor_data_impl(port_, incoming_data)
+}
+
+#[no_mangle]
+pub extern "C" fn wire_parse_sensor_data(port_: i64, incoming_data: *mut wire_uint_8_list) {
+    wire_parse_sensor_data_impl(port_, incoming_data)
+}
+
 // Section: allocate functions
 
 #[no_mangle]
@@ -52,6 +67,13 @@ pub extern "C" fn new_uint_8_list_0(len: i32) -> *mut wire_uint_8_list {
 }
 
 // Section: impl Wire2Api
+
+impl Wire2Api<String> for *mut wire_uint_8_list {
+    fn wire2api(self) -> String {
+        let vec: Vec<u8> = self.wire2api();
+        String::from_utf8_lossy(&vec).into_owned()
+    }
+}
 
 impl Wire2Api<Vec<u8>> for *mut wire_uint_8_list {
     fn wire2api(self) -> Vec<u8> {

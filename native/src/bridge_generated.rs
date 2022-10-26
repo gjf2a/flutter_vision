@@ -99,10 +99,64 @@ fn wire_get_correlation_flow_impl(
         },
     )
 }
+fn wire_reset_position_estimate_impl(port_: MessagePort) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap(
+        WrapInfo {
+            debug_name: "reset_position_estimate",
+            port: Some(port_),
+            mode: FfiCallMode::Normal,
+        },
+        move || move |task_callback| Ok(reset_position_estimate()),
+    )
+}
+fn wire_process_sensor_data_impl(
+    port_: MessagePort,
+    incoming_data: impl Wire2Api<String> + UnwindSafe,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap(
+        WrapInfo {
+            debug_name: "process_sensor_data",
+            port: Some(port_),
+            mode: FfiCallMode::Normal,
+        },
+        move || {
+            let api_incoming_data = incoming_data.wire2api();
+            move |task_callback| Ok(process_sensor_data(api_incoming_data))
+        },
+    )
+}
+fn wire_parse_sensor_data_impl(
+    port_: MessagePort,
+    incoming_data: impl Wire2Api<String> + UnwindSafe,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap(
+        WrapInfo {
+            debug_name: "parse_sensor_data",
+            port: Some(port_),
+            mode: FfiCallMode::Normal,
+        },
+        move || {
+            let api_incoming_data = incoming_data.wire2api();
+            move |task_callback| Ok(mirror_SensorData(parse_sensor_data(api_incoming_data)))
+        },
+    )
+}
 // Section: wrapper structs
+
+#[derive(Clone)]
+struct mirror_SensorData(SensorData);
 
 // Section: static checks
 
+const _: fn() = || {
+    let SensorData = None::<SensorData>.unwrap();
+    let _: i64 = SensorData.sonar_front;
+    let _: i64 = SensorData.sonar_left;
+    let _: i64 = SensorData.sonar_right;
+    let _: i64 = SensorData.motor_left;
+    let _: i64 = SensorData.motor_right;
+    let _: i64 = SensorData.action_tag;
+};
 // Section: allocate functions
 
 // Section: impl Wire2Api
@@ -119,6 +173,7 @@ where
         (!self.is_null()).then(|| self.wire2api())
     }
 }
+
 impl Wire2Api<i64> for i64 {
     fn wire2api(self) -> i64 {
         self
@@ -138,6 +193,21 @@ impl support::IntoDart for CorrelationFlow {
     }
 }
 impl support::IntoDartExceptPrimitive for CorrelationFlow {}
+
+impl support::IntoDart for mirror_SensorData {
+    fn into_dart(self) -> support::DartAbi {
+        vec![
+            self.0.sonar_front.into_dart(),
+            self.0.sonar_left.into_dart(),
+            self.0.sonar_right.into_dart(),
+            self.0.motor_left.into_dart(),
+            self.0.motor_right.into_dart(),
+            self.0.action_tag.into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl support::IntoDartExceptPrimitive for mirror_SensorData {}
 
 // Section: executor
 
