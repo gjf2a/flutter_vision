@@ -104,7 +104,43 @@ class NativeImpl implements Native {
         argNames: ["prevYs", "currentYs", "width", "height"],
       );
 
+  Future<void> resetPositionEstimate({dynamic hint}) =>
+      _platform.executeNormal(FlutterRustBridgeTask(
+        callFfi: (port_) => _platform.inner.wire_reset_position_estimate(port_),
+        parseSuccessData: _wire2api_unit,
+        constMeta: kResetPositionEstimateConstMeta,
+        argValues: [],
+        hint: hint,
+      ));
+
+  FlutterRustBridgeTaskConstMeta get kResetPositionEstimateConstMeta =>
+      const FlutterRustBridgeTaskConstMeta(
+        debugName: "reset_position_estimate",
+        argNames: [],
+      );
+
+  Future<String> processSensorData(
+          {required String incomingData, dynamic hint}) =>
+      _platform.executeNormal(FlutterRustBridgeTask(
+        callFfi: (port_) => _platform.inner.wire_process_sensor_data(
+            port_, _platform.api2wire_String(incomingData)),
+        parseSuccessData: _wire2api_String,
+        constMeta: kProcessSensorDataConstMeta,
+        argValues: [incomingData],
+        hint: hint,
+      ));
+
+  FlutterRustBridgeTaskConstMeta get kProcessSensorDataConstMeta =>
+      const FlutterRustBridgeTaskConstMeta(
+        debugName: "process_sensor_data",
+        argNames: ["incomingData"],
+      );
+
 // Section: wire2api
+
+  String _wire2api_String(dynamic raw) {
+    return raw as String;
+  }
 
   Uint8List _wire2api_ZeroCopyBuffer_Uint8List(dynamic raw) {
     return raw as Uint8List;
@@ -131,6 +167,10 @@ class NativeImpl implements Native {
   Uint8List _wire2api_uint_8_list(dynamic raw) {
     return raw as Uint8List;
   }
+
+  void _wire2api_unit(dynamic raw) {
+    return;
+  }
 }
 
 // Section: api2wire
@@ -143,6 +183,11 @@ int api2wire_u8(int raw) {
 class NativePlatform extends FlutterRustBridgeBase<NativeWire> {
   NativePlatform(ffi.DynamicLibrary dylib) : super(NativeWire(dylib));
 // Section: api2wire
+
+  @protected
+  ffi.Pointer<wire_uint_8_list> api2wire_String(String raw) {
+    return api2wire_uint_8_list(utf8.encoder.convert(raw));
+  }
 
   @protected
   int api2wire_i64(int raw) {
@@ -284,6 +329,37 @@ class NativeWire implements FlutterRustBridgeWireBase {
       _wire_get_correlation_flowPtr.asFunction<
           void Function(int, ffi.Pointer<wire_uint_8_list>,
               ffi.Pointer<wire_uint_8_list>, int, int)>();
+
+  void wire_reset_position_estimate(
+    int port_,
+  ) {
+    return _wire_reset_position_estimate(
+      port_,
+    );
+  }
+
+  late final _wire_reset_position_estimatePtr =
+      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64)>>(
+          'wire_reset_position_estimate');
+  late final _wire_reset_position_estimate =
+      _wire_reset_position_estimatePtr.asFunction<void Function(int)>();
+
+  void wire_process_sensor_data(
+    int port_,
+    ffi.Pointer<wire_uint_8_list> incoming_data,
+  ) {
+    return _wire_process_sensor_data(
+      port_,
+      incoming_data,
+    );
+  }
+
+  late final _wire_process_sensor_dataPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Void Function(ffi.Int64,
+              ffi.Pointer<wire_uint_8_list>)>>('wire_process_sensor_data');
+  late final _wire_process_sensor_data = _wire_process_sensor_dataPtr
+      .asFunction<void Function(int, ffi.Pointer<wire_uint_8_list>)>();
 
   ffi.Pointer<wire_uint_8_list> new_uint_8_list_0(
     int len,

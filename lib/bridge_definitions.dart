@@ -33,6 +33,15 @@ abstract class Native {
       dynamic hint});
 
   FlutterRustBridgeTaskConstMeta get kGetCorrelationFlowConstMeta;
+
+  Future<void> resetPositionEstimate({dynamic hint});
+
+  FlutterRustBridgeTaskConstMeta get kResetPositionEstimateConstMeta;
+
+  Future<String> processSensorData(
+      {required String incomingData, dynamic hint});
+
+  FlutterRustBridgeTaskConstMeta get kProcessSensorDataConstMeta;
 }
 
 class CorrelationFlow {
