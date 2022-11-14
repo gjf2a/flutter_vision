@@ -63,16 +63,18 @@ class SensorData {
   final int sonarFront;
   final int sonarLeft;
   final int sonarRight;
-  final int motorLeft;
-  final int motorRight;
-  final int actionTag;
+  final int leftCount;
+  final int rightCount;
+  final int leftSpeed;
+  final int rightSpeed;
 
   SensorData({
     required this.sonarFront,
     required this.sonarLeft,
     required this.sonarRight,
-    required this.motorLeft,
-    required this.motorRight,
-    required this.actionTag,
+    required this.leftCount,
+    required this.rightCount,
+    required this.leftSpeed,
+    required this.rightSpeed,
   });
 }

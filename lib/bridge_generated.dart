@@ -183,15 +183,16 @@ class NativeImpl implements Native {
 
   SensorData _wire2api_sensor_data(dynamic raw) {
     final arr = raw as List<dynamic>;
-    if (arr.length != 6)
-      throw Exception('unexpected arr length: expect 6 but see ${arr.length}');
+    if (arr.length != 7)
+      throw Exception('unexpected arr length: expect 7 but see ${arr.length}');
     return SensorData(
       sonarFront: _wire2api_i64(arr[0]),
       sonarLeft: _wire2api_i64(arr[1]),
       sonarRight: _wire2api_i64(arr[2]),
-      motorLeft: _wire2api_i64(arr[3]),
-      motorRight: _wire2api_i64(arr[4]),
-      actionTag: _wire2api_i64(arr[5]),
+      leftCount: _wire2api_i64(arr[3]),
+      rightCount: _wire2api_i64(arr[4]),
+      leftSpeed: _wire2api_i64(arr[5]),
+      rightSpeed: _wire2api_i64(arr[6]),
     );
   }
 
