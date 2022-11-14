@@ -71,24 +71,13 @@ enum WheelAction {
   forward, backward, stop
 }
 
-WheelAction fromIntLeft(int code) {
-  if (code < 19) {
+WheelAction fromSpeed(int speed) {
+  if (speed < 0) {
     return WheelAction.backward;
-  } else if (code < 29) {
-    return WheelAction.stop;
-  } else {
+  } else if (speed > 0) {
     return WheelAction.forward;
-  }
-}
-
-WheelAction fromIntRight(int code) {
-  int digit = code % 10;
-  if (digit == 9) {
-    return WheelAction.backward;
-  } else if (digit == 0) {
-    return WheelAction.stop;
   } else {
-    return WheelAction.forward;
+    return WheelAction.stop;
   }
 }
 
@@ -98,7 +87,7 @@ class RobotState {
 
   RobotState({required this.left, required this.right});
 
-  RobotState.decode(int code) : left = fromIntLeft(code), right = fromIntRight(code);
+  RobotState.decode(SensorData data) : left = fromSpeed(data.leftSpeed), right = fromSpeed(data.rightSpeed);
 
   bool straight() {
     return left == WheelAction.forward && right == WheelAction.forward;
