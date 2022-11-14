@@ -137,26 +137,14 @@ fn wire_parse_sensor_data_impl(
         },
         move || {
             let api_incoming_data = incoming_data.wire2api();
-            move |task_callback| Ok(mirror_SensorData(parse_sensor_data(api_incoming_data)))
+            move |task_callback| Ok(parse_sensor_data(api_incoming_data))
         },
     )
 }
 // Section: wrapper structs
 
-#[derive(Clone)]
-struct mirror_SensorData(SensorData);
-
 // Section: static checks
 
-const _: fn() = || {
-    let SensorData = None::<SensorData>.unwrap();
-    let _: i64 = SensorData.sonar_front;
-    let _: i64 = SensorData.sonar_left;
-    let _: i64 = SensorData.sonar_right;
-    let _: i64 = SensorData.motor_left;
-    let _: i64 = SensorData.motor_right;
-    let _: i64 = SensorData.action_tag;
-};
 // Section: allocate functions
 
 // Section: impl Wire2Api
@@ -194,20 +182,21 @@ impl support::IntoDart for CorrelationFlow {
 }
 impl support::IntoDartExceptPrimitive for CorrelationFlow {}
 
-impl support::IntoDart for mirror_SensorData {
+impl support::IntoDart for SensorData {
     fn into_dart(self) -> support::DartAbi {
         vec![
-            self.0.sonar_front.into_dart(),
-            self.0.sonar_left.into_dart(),
-            self.0.sonar_right.into_dart(),
-            self.0.motor_left.into_dart(),
-            self.0.motor_right.into_dart(),
-            self.0.action_tag.into_dart(),
+            self.sonar_front.into_dart(),
+            self.sonar_left.into_dart(),
+            self.sonar_right.into_dart(),
+            self.left_count.into_dart(),
+            self.right_count.into_dart(),
+            self.left_speed.into_dart(),
+            self.right_speed.into_dart(),
         ]
         .into_dart()
     }
 }
-impl support::IntoDartExceptPrimitive for mirror_SensorData {}
+impl support::IntoDartExceptPrimitive for SensorData {}
 
 // Section: executor
 

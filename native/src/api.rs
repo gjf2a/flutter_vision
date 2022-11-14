@@ -1,14 +1,25 @@
 use std::cmp::{max, min};
-use flutter_rust_bridge::{frb,ZeroCopyBuffer};
+use flutter_rust_bridge::{ZeroCopyBuffer};
 use correlation_flow::micro_rfft::{COL_DIM, ROW_DIM, MicroFftContext};
 use std::collections::HashMap;
-pub use particle_filter::sonar3bot::{SensorData, RobotSensorPosition, BOT};
+pub use particle_filter::sonar3bot::{RobotSensorPosition, BOT, MotorData};
 use flutter_rust_bridge::support::lazy_static;
 use std::sync::Mutex;
 
-#[frb(mirror(SensorData))]
-pub struct _SensorData {
-    pub sonar_front: i64, pub sonar_left: i64, pub sonar_right: i64, pub motor_left: i64, pub motor_right: i64, pub action_tag: i64
+pub struct SensorData {
+    pub sonar_front: i64,
+    pub sonar_left: i64,
+    pub sonar_right: i64,
+    pub left_count: i64,
+    pub right_count: i64,
+    pub left_speed: i64,
+    pub right_speed: i64
+}
+
+impl SensorData {
+    fn motor_data(&self) -> MotorData {
+        MotorData {left_count: self.left_count, right_count: self.right_count, left_speed: self.left_speed, right_speed: self.right_speed}
+    }
 }
 
 pub fn intensity_rgba(intensities: Vec<u8>) -> ZeroCopyBuffer<Vec<u8>> {
@@ -83,7 +94,7 @@ pub fn reset_position_estimate() {
 pub fn process_sensor_data(incoming_data: String) -> String {
     let parsed = parse_sensor_data(incoming_data);
     let mut pos = POS.lock().unwrap();
-    pos.update(parsed);
+    pos.motor_update(parsed.motor_data());
     let (x, y) = pos.get_pos().position();
     let h = pos.get_pos().heading();
     format!("({x:.2} {y:.2} {h}) {:?} #{}", pos.get_encoder_counts(), pos.num_updates())
@@ -96,10 +107,13 @@ pub fn parse_sensor_data(incoming_data: String) -> SensorData {
         let value: i64 = ss.next().unwrap().parse().unwrap();
         (key, value)
     }).collect();
-    SensorData::new(*parts.get("SF").unwrap(),
-                    *parts.get("SL").unwrap(),
-                    *parts.get("SR").unwrap(),
-                    *parts.get("ML").unwrap(),
-                    *parts.get("MR").unwrap(),
-                    *parts.get("W").unwrap())
+    SensorData {
+        sonar_front: *parts.get("SF").unwrap(),
+        sonar_left: *parts.get("SL").unwrap(),
+        sonar_right: *parts.get("SR").unwrap(),
+        left_count: *parts.get("LC").unwrap(),
+        right_count: *parts.get("RC").unwrap(),
+        left_speed: *parts.get("LS").unwrap(),
+        right_speed: *parts.get("RS").unwrap(),
+    }
 }
