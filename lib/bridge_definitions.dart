@@ -12,7 +12,6 @@ abstract class Native {
 
   FlutterRustBridgeTaskConstMeta get kIntensityRgbaConstMeta;
 
-  /// Translated and adapted from: https://stackoverflow.com/a/57604820/906268
   Future<Uint8List> yuvRgba(
       {required Uint8List ys,
       required Uint8List us,
@@ -24,6 +23,18 @@ abstract class Native {
       dynamic hint});
 
   FlutterRustBridgeTaskConstMeta get kYuvRgbaConstMeta;
+
+  Future<Uint8List> groundlineSampleOverlay(
+      {required Uint8List ys,
+      required Uint8List us,
+      required Uint8List vs,
+      required int width,
+      required int height,
+      required int uvRowStride,
+      required int uvPixelStride,
+      dynamic hint});
+
+  FlutterRustBridgeTaskConstMeta get kGroundlineSampleOverlayConstMeta;
 
   Future<CorrelationFlow> getCorrelationFlow(
       {required Uint8List prevYs,

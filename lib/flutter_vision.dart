@@ -17,13 +17,16 @@ class CameraImagePainter extends CustomPainter {
   DateTime _start = DateTime.now();
   double _fps = 0.0;
   int _frameCount = 0;
+  Future<dartui.Image> Function(CameraImage) imageMaker;
+
+  CameraImagePainter(this.imageMaker);
 
   Future<void> setImage(CameraImage img) async {
     if (!_initialized) {
       _start = DateTime.now();
       _initialized = true;
     }
-    _lastImage = await makeColorFrom(img);
+    _lastImage = await imageMaker(img);
     _width = _lastImage.width;
     _height = _lastImage.height;
     _frameCount += 1;
@@ -54,6 +57,11 @@ Future<dartui.Image> makeGrayscaleFrom(CameraImage img) async {
 
 Future<dartui.Image> makeColorFrom(CameraImage img) async {
   Uint8List proc = await api.yuvRgba(ys: img.planes[0].bytes, us: img.planes[1].bytes, vs: img.planes[2].bytes, width: img.width, height: img.height, uvRowStride: img.planes[1].bytesPerRow, uvPixelStride: img.planes[1].bytesPerPixel!);
+  return makeImageFrom(proc, img.width, img.height);
+}
+
+Future<dartui.Image> makeGroundlineSampleOverlay(CameraImage img) async {
+  Uint8List proc = await api.groundlineSampleOverlay(ys: img.planes[0].bytes, us: img.planes[1].bytes, vs: img.planes[2].bytes, width: img.width, height: img.height, uvRowStride: img.planes[1].bytesPerRow, uvPixelStride: img.planes[1].bytesPerPixel!);
   return makeImageFrom(proc, img.width, img.height);
 }
 
