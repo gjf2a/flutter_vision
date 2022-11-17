@@ -54,18 +54,14 @@ pub fn groundline_sample_overlay(ys: Vec<u8>, us: Vec<u8>, vs: Vec<u8>, width: i
     let lower_height = (height as f64 * LOWER_SAMPLE_HEIGHT) as i64;
     let lower_y_start = (height as f64 * (1.0 - LOWER_SAMPLE_HEIGHT)) as i64;
     let white = (255, 255, 255);
-    println!("Starting 1st rectangle");
     overlay_rectangle_on(&mut image, width, (0, 0), (upper_left_x_end, upper_max_y), white);
-    println!("Starting 2nd rectangle");
     overlay_rectangle_on(&mut image, width, (upper_right_x_start, 0), (upper_left_x_end, upper_max_y), white);
-    println!("Starting 3rd rectangle");
     overlay_rectangle_on(&mut image, width, (lower_x_start, lower_y_start), (lower_width, lower_height), white);
-    println!("Finished rectangles");
     ZeroCopyBuffer(image)
 }
 
 fn point2index(x: i64, y: i64, width: i64) -> usize {
-    (y * width * 4 + x) as usize
+    ((y * width + x) * 4) as usize
 }
 
 /// Translated and adapted from: https://stackoverflow.com/a/57604820/906268
