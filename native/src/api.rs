@@ -1,4 +1,4 @@
-use std::cmp::{max, min};
+use std::{cmp::{max, min}, collections::BTreeSet};
 use flutter_rust_bridge::{ZeroCopyBuffer};
 use correlation_flow::micro_rfft::{COL_DIM, ROW_DIM, MicroFftContext};
 use std::collections::HashMap;
@@ -38,6 +38,21 @@ pub fn intensity_rgba(intensities: Vec<u8>) -> ZeroCopyBuffer<Vec<u8>> {
 pub fn yuv_rgba(ys: Vec<u8>, us: Vec<u8>, vs: Vec<u8>, width: i64, height: i64, uv_row_stride: i64, uv_pixel_stride: i64) -> ZeroCopyBuffer<Vec<u8>> {
     ZeroCopyBuffer(inner_yuv_rgba(ys, us, vs, width, height, uv_row_stride, uv_pixel_stride))
 }
+
+pub struct ColorCount {
+    pub count: i64,
+    pub image: ZeroCopyBuffer<Vec<u8>>
+}
+
+pub fn color_count(ys: Vec<u8>, us: Vec<u8>, vs: Vec<u8>, width: i64, height: i64, uv_row_stride: i64, uv_pixel_stride: i64) -> ColorCount {
+    let rgba = inner_yuv_rgba(ys, us, vs, width, height, uv_row_stride, uv_pixel_stride);
+    let mut distinct_colors = BTreeSet::new();
+    for i in (0..rgba.len()).step_by(4) {
+        let color = (rgba[i], rgba[i+1], rgba[i+2]);
+        distinct_colors.insert(color);
+    }
+    ColorCount {count: distinct_colors.len() as i64, image: ZeroCopyBuffer(rgba)}
+}    
 
 const UPPER_SAMPLE_HEIGHT: f64 = 0.25;
 const UPPER_SAMPLE_WIDTH: f64 = 0.25;

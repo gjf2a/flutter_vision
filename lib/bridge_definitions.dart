@@ -24,6 +24,18 @@ abstract class Native {
 
   FlutterRustBridgeTaskConstMeta get kYuvRgbaConstMeta;
 
+  Future<ColorCount> colorCount(
+      {required Uint8List ys,
+      required Uint8List us,
+      required Uint8List vs,
+      required int width,
+      required int height,
+      required int uvRowStride,
+      required int uvPixelStride,
+      dynamic hint});
+
+  FlutterRustBridgeTaskConstMeta get kColorCountConstMeta;
+
   Future<Uint8List> groundlineSampleOverlay(
       {required Uint8List ys,
       required Uint8List us,
@@ -58,6 +70,16 @@ abstract class Native {
       {required String incomingData, dynamic hint});
 
   FlutterRustBridgeTaskConstMeta get kParseSensorDataConstMeta;
+}
+
+class ColorCount {
+  final int count;
+  final Uint8List image;
+
+  ColorCount({
+    required this.count,
+    required this.image,
+  });
 }
 
 class CorrelationFlow {

@@ -79,6 +79,45 @@ class NativeImpl implements Native {
         ],
       );
 
+  Future<ColorCount> colorCount(
+          {required Uint8List ys,
+          required Uint8List us,
+          required Uint8List vs,
+          required int width,
+          required int height,
+          required int uvRowStride,
+          required int uvPixelStride,
+          dynamic hint}) =>
+      _platform.executeNormal(FlutterRustBridgeTask(
+        callFfi: (port_) => _platform.inner.wire_color_count(
+            port_,
+            _platform.api2wire_uint_8_list(ys),
+            _platform.api2wire_uint_8_list(us),
+            _platform.api2wire_uint_8_list(vs),
+            _platform.api2wire_i64(width),
+            _platform.api2wire_i64(height),
+            _platform.api2wire_i64(uvRowStride),
+            _platform.api2wire_i64(uvPixelStride)),
+        parseSuccessData: _wire2api_color_count,
+        constMeta: kColorCountConstMeta,
+        argValues: [ys, us, vs, width, height, uvRowStride, uvPixelStride],
+        hint: hint,
+      ));
+
+  FlutterRustBridgeTaskConstMeta get kColorCountConstMeta =>
+      const FlutterRustBridgeTaskConstMeta(
+        debugName: "color_count",
+        argNames: [
+          "ys",
+          "us",
+          "vs",
+          "width",
+          "height",
+          "uvRowStride",
+          "uvPixelStride"
+        ],
+      );
+
   Future<Uint8List> groundlineSampleOverlay(
           {required Uint8List ys,
           required Uint8List us,
@@ -200,6 +239,16 @@ class NativeImpl implements Native {
 
   Uint8List _wire2api_ZeroCopyBuffer_Uint8List(dynamic raw) {
     return raw as Uint8List;
+  }
+
+  ColorCount _wire2api_color_count(dynamic raw) {
+    final arr = raw as List<dynamic>;
+    if (arr.length != 2)
+      throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
+    return ColorCount(
+      count: _wire2api_i64(arr[0]),
+      image: _wire2api_ZeroCopyBuffer_Uint8List(arr[1]),
+    );
   }
 
   CorrelationFlow _wire2api_correlation_flow(dynamic raw) {
@@ -366,6 +415,50 @@ class NativeWire implements FlutterRustBridgeWireBase {
               ffi.Int64,
               ffi.Int64)>>('wire_yuv_rgba');
   late final _wire_yuv_rgba = _wire_yuv_rgbaPtr.asFunction<
+      void Function(
+          int,
+          ffi.Pointer<wire_uint_8_list>,
+          ffi.Pointer<wire_uint_8_list>,
+          ffi.Pointer<wire_uint_8_list>,
+          int,
+          int,
+          int,
+          int)>();
+
+  void wire_color_count(
+    int port_,
+    ffi.Pointer<wire_uint_8_list> ys,
+    ffi.Pointer<wire_uint_8_list> us,
+    ffi.Pointer<wire_uint_8_list> vs,
+    int width,
+    int height,
+    int uv_row_stride,
+    int uv_pixel_stride,
+  ) {
+    return _wire_color_count(
+      port_,
+      ys,
+      us,
+      vs,
+      width,
+      height,
+      uv_row_stride,
+      uv_pixel_stride,
+    );
+  }
+
+  late final _wire_color_countPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Void Function(
+              ffi.Int64,
+              ffi.Pointer<wire_uint_8_list>,
+              ffi.Pointer<wire_uint_8_list>,
+              ffi.Pointer<wire_uint_8_list>,
+              ffi.Int64,
+              ffi.Int64,
+              ffi.Int64,
+              ffi.Int64)>>('wire_color_count');
+  late final _wire_color_count = _wire_color_countPtr.asFunction<
       void Function(
           int,
           ffi.Pointer<wire_uint_8_list>,
