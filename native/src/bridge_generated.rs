@@ -251,13 +251,6 @@ impl Wire2Api<u8> for u8 {
 
 // Section: impl IntoDart
 
-impl support::IntoDart for ColorCount {
-    fn into_dart(self) -> support::DartAbi {
-        vec![self.count.into_dart(), self.image.into_dart()].into_dart()
-    }
-}
-impl support::IntoDartExceptPrimitive for ColorCount {}
-
 impl support::IntoDart for CorrelationFlow {
     fn into_dart(self) -> support::DartAbi {
         vec![self.dx.into_dart(), self.dy.into_dart()].into_dart()

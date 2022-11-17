@@ -79,7 +79,7 @@ class NativeImpl implements Native {
         ],
       );
 
-  Future<ColorCount> colorCount(
+  Future<int> colorCount(
           {required Uint8List ys,
           required Uint8List us,
           required Uint8List vs,
@@ -98,7 +98,7 @@ class NativeImpl implements Native {
             _platform.api2wire_i64(height),
             _platform.api2wire_i64(uvRowStride),
             _platform.api2wire_i64(uvPixelStride)),
-        parseSuccessData: _wire2api_color_count,
+        parseSuccessData: _wire2api_i64,
         constMeta: kColorCountConstMeta,
         argValues: [ys, us, vs, width, height, uvRowStride, uvPixelStride],
         hint: hint,
@@ -239,16 +239,6 @@ class NativeImpl implements Native {
 
   Uint8List _wire2api_ZeroCopyBuffer_Uint8List(dynamic raw) {
     return raw as Uint8List;
-  }
-
-  ColorCount _wire2api_color_count(dynamic raw) {
-    final arr = raw as List<dynamic>;
-    if (arr.length != 2)
-      throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
-    return ColorCount(
-      count: _wire2api_i64(arr[0]),
-      image: _wire2api_ZeroCopyBuffer_Uint8List(arr[1]),
-    );
   }
 
   CorrelationFlow _wire2api_correlation_flow(dynamic raw) {

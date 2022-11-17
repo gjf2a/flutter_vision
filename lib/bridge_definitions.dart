@@ -24,7 +24,7 @@ abstract class Native {
 
   FlutterRustBridgeTaskConstMeta get kYuvRgbaConstMeta;
 
-  Future<ColorCount> colorCount(
+  Future<int> colorCount(
       {required Uint8List ys,
       required Uint8List us,
       required Uint8List vs,
@@ -70,16 +70,6 @@ abstract class Native {
       {required String incomingData, dynamic hint});
 
   FlutterRustBridgeTaskConstMeta get kParseSensorDataConstMeta;
-}
-
-class ColorCount {
-  final int count;
-  final Uint8List image;
-
-  ColorCount({
-    required this.count,
-    required this.image,
-  });
 }
 
 class CorrelationFlow {
