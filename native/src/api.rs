@@ -6,6 +6,8 @@ pub use particle_filter::sonar3bot::{RobotSensorPosition, BOT, MotorData};
 use flutter_rust_bridge::support::lazy_static;
 use std::sync::Mutex;
 
+type RgbTriple = (u8, u8, u8);
+
 pub struct SensorData {
     pub sonar_front: i64,
     pub sonar_left: i64,
@@ -33,8 +35,37 @@ pub fn intensity_rgba(intensities: Vec<u8>) -> ZeroCopyBuffer<Vec<u8>> {
     ZeroCopyBuffer(result)
 }
 
-/// Translated and adapted from: https://stackoverflow.com/a/57604820/906268
 pub fn yuv_rgba(ys: Vec<u8>, us: Vec<u8>, vs: Vec<u8>, width: i64, height: i64, uv_row_stride: i64, uv_pixel_stride: i64) -> ZeroCopyBuffer<Vec<u8>> {
+    ZeroCopyBuffer(inner_yuv_rgba(ys, us, vs, width, height, uv_row_stride, uv_pixel_stride))
+}
+
+const UPPER_SAMPLE_HEIGHT: f64 = 0.25;
+const UPPER_SAMPLE_WIDTH: f64 = 0.25;
+const LOWER_SAMPLE_WIDTH: f64 = 0.3;
+const LOWER_SAMPLE_HEIGHT: f64 = 0.25;
+
+pub fn groundline_sample_overlay(ys: Vec<u8>, us: Vec<u8>, vs: Vec<u8>, width: i64, height: i64, uv_row_stride: i64, uv_pixel_stride: i64) -> ZeroCopyBuffer<Vec<u8>> {
+    let mut image = inner_yuv_rgba(ys, us, vs, width, height, uv_row_stride, uv_pixel_stride);
+    let upper_max_y = (height as f64 * UPPER_SAMPLE_HEIGHT) as i64;
+    let upper_left_x_end = (width as f64 * UPPER_SAMPLE_WIDTH) as i64;
+    let upper_right_x_start = width - upper_left_x_end;
+    let lower_x_start = (width as f64 * (0.5 - LOWER_SAMPLE_WIDTH / 2.0)) as i64;
+    let lower_width = (width as f64 * LOWER_SAMPLE_WIDTH) as i64;
+    let lower_height = (height as f64 * LOWER_SAMPLE_HEIGHT) as i64;
+    let lower_y_start = (height as f64 * (1.0 - LOWER_SAMPLE_HEIGHT)) as i64;
+    let white = (255, 255, 255);
+    overlay_rectangle_on(&mut image, width, (0, 0), (upper_left_x_end, upper_max_y), white);
+    overlay_rectangle_on(&mut image, width, (upper_right_x_start, 0), (upper_left_x_end, upper_max_y), white);
+    overlay_rectangle_on(&mut image, width, (lower_x_start, lower_y_start), (lower_width, lower_height), white);
+    ZeroCopyBuffer(image)
+}
+
+fn point2index(x: i64, y: i64, width: i64) -> usize {
+    (y * width * 4 + x) as usize
+}
+
+/// Translated and adapted from: https://stackoverflow.com/a/57604820/906268
+fn inner_yuv_rgba(ys: Vec<u8>, us: Vec<u8>, vs: Vec<u8>, width: i64, height: i64, uv_row_stride: i64, uv_pixel_stride: i64) -> Vec<u8> {
     let mut result = Vec::new();
     for y in 0..height {
         for x in 0..width {
@@ -49,7 +80,31 @@ pub fn yuv_rgba(ys: Vec<u8>, us: Vec<u8>, vs: Vec<u8>, width: i64, height: i64, 
             result.push(u8::MAX);
         }
     }
-    ZeroCopyBuffer(result)
+    result
+}
+
+fn plot(image: &mut Vec<u8>, x: i64, y: i64, width: i64, color: RgbTriple) {
+    let index = point2index(x, y, width);
+    image[index] = color.0;
+    image[index + 1] = color.1;
+    image[index + 2] = color.2;
+}
+
+fn overlay_points_on(image: &mut Vec<u8>, width: i64, points: &Vec<(i64,i64)>, color: RgbTriple) {
+    for (x, y) in points.iter() {
+        plot(image, *x, *y, width, color);
+    }
+}
+
+fn overlay_rectangle_on(image: &mut Vec<u8>, width: i64, ul_corner: (i64, i64), dimensions: (i64, i64), color: RgbTriple) {
+    for x in ul_corner.0..ul_corner.0 + dimensions.0 {
+        plot(image, x, ul_corner.1, width, color);
+        plot(image, x, ul_corner.1 + dimensions.1, width, color);
+    }
+    for y in ul_corner.1..ul_corner.1 + dimensions.1 {
+        plot(image, ul_corner.0, y, width, color);
+        plot(image, ul_corner.0 + dimensions.0, y, width, color);
+    }
 }
 
 fn clamp_u8(value: i64) -> u8 {

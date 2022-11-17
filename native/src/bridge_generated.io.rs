@@ -30,6 +30,29 @@ pub extern "C" fn wire_yuv_rgba(
 }
 
 #[no_mangle]
+pub extern "C" fn wire_groundline_sample_overlay(
+    port_: i64,
+    ys: *mut wire_uint_8_list,
+    us: *mut wire_uint_8_list,
+    vs: *mut wire_uint_8_list,
+    width: i64,
+    height: i64,
+    uv_row_stride: i64,
+    uv_pixel_stride: i64,
+) {
+    wire_groundline_sample_overlay_impl(
+        port_,
+        ys,
+        us,
+        vs,
+        width,
+        height,
+        uv_row_stride,
+        uv_pixel_stride,
+    )
+}
+
+#[no_mangle]
 pub extern "C" fn wire_get_correlation_flow(
     port_: i64,
     prev_ys: *mut wire_uint_8_list,
