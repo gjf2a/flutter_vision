@@ -157,6 +157,45 @@ class NativeImpl implements Native {
         ],
       );
 
+  Future<Uint8List> groundlineKMeans(
+          {required Uint8List ys,
+          required Uint8List us,
+          required Uint8List vs,
+          required int width,
+          required int height,
+          required int uvRowStride,
+          required int uvPixelStride,
+          dynamic hint}) =>
+      _platform.executeNormal(FlutterRustBridgeTask(
+        callFfi: (port_) => _platform.inner.wire_groundline_k_means(
+            port_,
+            _platform.api2wire_uint_8_list(ys),
+            _platform.api2wire_uint_8_list(us),
+            _platform.api2wire_uint_8_list(vs),
+            _platform.api2wire_i64(width),
+            _platform.api2wire_i64(height),
+            _platform.api2wire_i64(uvRowStride),
+            _platform.api2wire_i64(uvPixelStride)),
+        parseSuccessData: _wire2api_ZeroCopyBuffer_Uint8List,
+        constMeta: kGroundlineKMeansConstMeta,
+        argValues: [ys, us, vs, width, height, uvRowStride, uvPixelStride],
+        hint: hint,
+      ));
+
+  FlutterRustBridgeTaskConstMeta get kGroundlineKMeansConstMeta =>
+      const FlutterRustBridgeTaskConstMeta(
+        debugName: "groundline_k_means",
+        argNames: [
+          "ys",
+          "us",
+          "vs",
+          "width",
+          "height",
+          "uvRowStride",
+          "uvPixelStride"
+        ],
+      );
+
   Future<CorrelationFlow> getCorrelationFlow(
           {required Uint8List prevYs,
           required Uint8List currentYs,
@@ -503,6 +542,50 @@ class NativeWire implements FlutterRustBridgeWireBase {
               int,
               int,
               int)>();
+
+  void wire_groundline_k_means(
+    int port_,
+    ffi.Pointer<wire_uint_8_list> ys,
+    ffi.Pointer<wire_uint_8_list> us,
+    ffi.Pointer<wire_uint_8_list> vs,
+    int width,
+    int height,
+    int uv_row_stride,
+    int uv_pixel_stride,
+  ) {
+    return _wire_groundline_k_means(
+      port_,
+      ys,
+      us,
+      vs,
+      width,
+      height,
+      uv_row_stride,
+      uv_pixel_stride,
+    );
+  }
+
+  late final _wire_groundline_k_meansPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Void Function(
+              ffi.Int64,
+              ffi.Pointer<wire_uint_8_list>,
+              ffi.Pointer<wire_uint_8_list>,
+              ffi.Pointer<wire_uint_8_list>,
+              ffi.Int64,
+              ffi.Int64,
+              ffi.Int64,
+              ffi.Int64)>>('wire_groundline_k_means');
+  late final _wire_groundline_k_means = _wire_groundline_k_meansPtr.asFunction<
+      void Function(
+          int,
+          ffi.Pointer<wire_uint_8_list>,
+          ffi.Pointer<wire_uint_8_list>,
+          ffi.Pointer<wire_uint_8_list>,
+          int,
+          int,
+          int,
+          int)>();
 
   void wire_get_correlation_flow(
     int port_,

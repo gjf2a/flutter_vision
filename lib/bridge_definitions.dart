@@ -48,6 +48,18 @@ abstract class Native {
 
   FlutterRustBridgeTaskConstMeta get kGroundlineSampleOverlayConstMeta;
 
+  Future<Uint8List> groundlineKMeans(
+      {required Uint8List ys,
+      required Uint8List us,
+      required Uint8List vs,
+      required int width,
+      required int height,
+      required int uvRowStride,
+      required int uvPixelStride,
+      dynamic hint});
+
+  FlutterRustBridgeTaskConstMeta get kGroundlineKMeansConstMeta;
+
   Future<CorrelationFlow> getCorrelationFlow(
       {required Uint8List prevYs,
       required Uint8List currentYs,

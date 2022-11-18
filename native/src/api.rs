@@ -1,6 +1,7 @@
 use std::{cmp::{max, min}, collections::BTreeSet};
 use flutter_rust_bridge::{ZeroCopyBuffer};
 use correlation_flow::micro_rfft::{COL_DIM, ROW_DIM, MicroFftContext};
+use scarlet::prelude::{Color, RGBColor, ColorPoint};
 use std::collections::HashMap;
 pub use particle_filter::sonar3bot::{RobotSensorPosition, BOT, MotorData};
 use flutter_rust_bridge::support::lazy_static;
@@ -70,6 +71,41 @@ pub fn groundline_sample_overlay(ys: Vec<u8>, us: Vec<u8>, vs: Vec<u8>, width: i
     ZeroCopyBuffer(image)
 }
 
+const NUM_COLOR_CLUSTERS: usize = 100;
+ 
+pub fn groundline_k_means(ys: Vec<u8>, us: Vec<u8>, vs: Vec<u8>, width: i64, height: i64, uv_row_stride: i64, uv_pixel_stride: i64) -> ZeroCopyBuffer<Vec<u8>> {
+    let image = scarlet_yuv_rgb(ys, us, vs, width, height, uv_row_stride, uv_pixel_stride);
+    let mut kmeans = kmeans::Kmeans::new(NUM_COLOR_CLUSTERS, &image, RGBColor::distance, |items| {
+        let item = *items[0];
+        let others = items[1..].iter().copied().copied().collect::<Vec<_>>();
+        item.average(others).into()
+    });
+    let mut result = vec![];
+    for color in image {
+        let mean = kmeans.best_matching_mean(&color);
+        let bytes: (u8, u8, u8) = mean.into();
+        result.push(bytes.0);
+        result.push(bytes.1);
+        result.push(bytes.2);
+        result.push(u8::MAX);
+    }
+    ZeroCopyBuffer(result)
+    // Next steps:
+    // * Use the scarlet crate's RGBColor type. Write a function that takes all of the above and generates a Vec<RGBColor>. 
+    // * Use the distance() and average() or weighted_average() methods to do KMeans.
+    // * Create a classifier atop kmeans.
+}
+
+//fn extract_pixels_from(colors: &Vec<RGBColor>, width: i64, ul_corner: (usize, usize), dimensions: (usize, usize)) -> 
+
+fn scarlet_yuv_rgb(ys: Vec<u8>, us: Vec<u8>, vs: Vec<u8>, width: i64, height: i64, uv_row_stride: i64, uv_pixel_stride: i64) -> Vec<RGBColor> {
+    let mut result = Vec::new();
+    generic_yuv_rgba(|rgb| {
+        result.push(rgb.into());
+    }, ys, us, vs, width, height, uv_row_stride, uv_pixel_stride);
+    result
+}
+
 fn point2index(x: i64, y: i64, width: i64) -> usize {
     ((y * width + x) * 4) as usize
 }
@@ -77,20 +113,30 @@ fn point2index(x: i64, y: i64, width: i64) -> usize {
 /// Translated and adapted from: https://stackoverflow.com/a/57604820/906268
 fn inner_yuv_rgba(ys: Vec<u8>, us: Vec<u8>, vs: Vec<u8>, width: i64, height: i64, uv_row_stride: i64, uv_pixel_stride: i64) -> Vec<u8> {
     let mut result = Vec::new();
+    generic_yuv_rgba(|(r, g, b)| {
+        result.push(r);
+        result.push(g);
+        result.push(b);
+        result.push(u8::MAX);
+    }, ys, us, vs, width, height, uv_row_stride, uv_pixel_stride);
+    result
+}
+
+fn generic_yuv_rgba<F: FnMut((u8, u8, u8))>(mut add: F, ys: Vec<u8>, us: Vec<u8>, vs: Vec<u8>, width: i64, height: i64, uv_row_stride: i64, uv_pixel_stride: i64) {
     for y in 0..height {
         for x in 0..width {
             let uv_index = (uv_pixel_stride * (x/2) + uv_row_stride * (y/2)) as usize;
             let index = (y * width + x) as usize;
-            let yp = ys[index] as i64;
-            let up = us[uv_index] as i64;
-            let vp = vs[uv_index] as i64;
-            result.push(clamp_u8(yp + vp * 1436 / 1024 - 179));
-            result.push(clamp_u8(yp - up * 46549 / 131072 + 44 - vp * 93604 / 131072 + 91));
-            result.push(clamp_u8(yp + up * 1814 / 1024 - 227));
-            result.push(u8::MAX);
+            let rgb = yuv2rgb(ys[index] as i64, us[uv_index] as i64, vs[uv_index] as i64);
+            add(rgb);
         }
     }
-    result
+}
+
+fn yuv2rgb(yp: i64, up: i64, vp: i64) -> (u8, u8, u8) {
+    (clamp_u8(yp + vp * 1436 / 1024 - 179), 
+     clamp_u8(yp - up * 46549 / 131072 + 44 - vp * 93604 / 131072 + 91), 
+     clamp_u8(yp + up * 1814 / 1024 - 227))
 }
 
 fn plot(image: &mut Vec<u8>, x: i64, y: i64, width: i64, color: RgbTriple) {
