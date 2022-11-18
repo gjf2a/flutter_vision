@@ -65,6 +65,11 @@ Future<dartui.Image> makeGroundlineSampleOverlay(CameraImage img) async {
   return makeImageFrom(proc, img.width, img.height);
 }
 
+Future<dartui.Image> makeGroundlineKmeansFilter(CameraImage img) async {
+  Uint8List proc = await api.groundlineKMeans(ys: img.planes[0].bytes, us: img.planes[1].bytes, vs: img.planes[2].bytes, width: img.width, height: img.height, uvRowStride: img.planes[1].bytesPerRow, uvPixelStride: img.planes[1].bytesPerPixel!);
+  return makeImageFrom(proc, img.width, img.height);
+}
+
 // This is super-clunky. I wonder if there's a better way...
 Future<dartui.Image> makeImageFrom(Uint8List intensities, int width, int height) async {
   dartui.ImmutableBuffer rgba = await dartui.ImmutableBuffer.fromUint8List(intensities);
