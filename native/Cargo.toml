@@ -13,3 +13,5 @@ flutter_rust_bridge = "1"
 correlation_flow = "0.1.4"
 particle_filter = {git = "https://github.com/gjf2a/particle_filter"}
 lazy_static = "1.4.0"
+kmeans = {git = "https://github.com/gjf2a/kmeans"}
+scarlet = "1"
