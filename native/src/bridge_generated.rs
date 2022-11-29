@@ -19,6 +19,26 @@ use flutter_rust_bridge::*;
 
 // Section: wire functions
 
+fn wire_kmeans_ready_impl(port_: MessagePort) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap(
+        WrapInfo {
+            debug_name: "kmeans_ready",
+            port: Some(port_),
+            mode: FfiCallMode::Normal,
+        },
+        move || move |task_callback| Ok(kmeans_ready()),
+    )
+}
+fn wire_training_time_impl(port_: MessagePort) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap(
+        WrapInfo {
+            debug_name: "training_time",
+            port: Some(port_),
+            mode: FfiCallMode::Normal,
+        },
+        move || move |task_callback| Ok(training_time()),
+    )
+}
 fn wire_intensity_rgba_impl(port_: MessagePort, intensities: impl Wire2Api<Vec<u8>> + UnwindSafe) {
     FLUTTER_RUST_BRIDGE_HANDLER.wrap(
         WrapInfo {
@@ -134,6 +154,44 @@ fn wire_groundline_sample_overlay_impl(
             let api_uv_pixel_stride = uv_pixel_stride.wire2api();
             move |task_callback| {
                 Ok(groundline_sample_overlay(
+                    api_ys,
+                    api_us,
+                    api_vs,
+                    api_width,
+                    api_height,
+                    api_uv_row_stride,
+                    api_uv_pixel_stride,
+                ))
+            }
+        },
+    )
+}
+fn wire_start_kmeans_training_impl(
+    port_: MessagePort,
+    ys: impl Wire2Api<Vec<u8>> + UnwindSafe,
+    us: impl Wire2Api<Vec<u8>> + UnwindSafe,
+    vs: impl Wire2Api<Vec<u8>> + UnwindSafe,
+    width: impl Wire2Api<i64> + UnwindSafe,
+    height: impl Wire2Api<i64> + UnwindSafe,
+    uv_row_stride: impl Wire2Api<i64> + UnwindSafe,
+    uv_pixel_stride: impl Wire2Api<i64> + UnwindSafe,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap(
+        WrapInfo {
+            debug_name: "start_kmeans_training",
+            port: Some(port_),
+            mode: FfiCallMode::Normal,
+        },
+        move || {
+            let api_ys = ys.wire2api();
+            let api_us = us.wire2api();
+            let api_vs = vs.wire2api();
+            let api_width = width.wire2api();
+            let api_height = height.wire2api();
+            let api_uv_row_stride = uv_row_stride.wire2api();
+            let api_uv_pixel_stride = uv_pixel_stride.wire2api();
+            move |task_callback| {
+                Ok(start_kmeans_training(
                     api_ys,
                     api_us,
                     api_vs,

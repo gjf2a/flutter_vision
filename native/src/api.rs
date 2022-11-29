@@ -1,4 +1,4 @@
-use std::{cmp::{max, min}, collections::BTreeSet};
+use std::{cmp::{max, min}, collections::BTreeSet, sync::atomic::{Ordering, AtomicBool, AtomicU64}, time::Instant};
 use flutter_rust_bridge::{ZeroCopyBuffer};
 use correlation_flow::micro_rfft::{COL_DIM, ROW_DIM, MicroFftContext};
 use scarlet::prelude::{Color, RGBColor, ColorPoint};
@@ -6,8 +6,24 @@ use std::collections::HashMap;
 pub use particle_filter::sonar3bot::{RobotSensorPosition, BOT, MotorData};
 use flutter_rust_bridge::support::lazy_static;
 use std::sync::Mutex;
+use kmeans::Kmeans;
 
 type RgbTriple = (u8, u8, u8);
+
+lazy_static! {
+    static ref POS: Mutex<RobotSensorPosition> = Mutex::new(RobotSensorPosition::new(BOT));
+    static ref COLOR_MEANS: Mutex<Option<Kmeans<RGBColor, f64, fn (&RGBColor,&RGBColor)->f64>>> = Mutex::new(None);
+    static ref KMEANS_READY: AtomicBool = AtomicBool::new(false);
+    static ref TRAINING_TIME: AtomicU64 = AtomicU64::new(0);
+}
+
+pub fn kmeans_ready() -> bool {
+    KMEANS_READY.load(Ordering::SeqCst)
+}
+
+pub fn training_time() -> i64 {
+    TRAINING_TIME.load(Ordering::SeqCst) as i64
+}
 
 pub struct SensorData {
     pub sonar_front: i64,
@@ -71,29 +87,41 @@ pub fn groundline_sample_overlay(ys: Vec<u8>, us: Vec<u8>, vs: Vec<u8>, width: i
     ZeroCopyBuffer(image)
 }
 
-const NUM_COLOR_CLUSTERS: usize = 100;
+const NUM_COLOR_CLUSTERS: usize = 2;
+
+pub fn start_kmeans_training(ys: Vec<u8>, us: Vec<u8>, vs: Vec<u8>, width: i64, height: i64, uv_row_stride: i64, uv_pixel_stride: i64) {
+    std::thread::spawn(move || {
+        let start = Instant::now();
+        let image = scarlet_yuv_rgb(ys, us, vs, width, height, uv_row_stride, uv_pixel_stride);
+        let mut color_means = COLOR_MEANS.lock().unwrap();
+        *color_means = Some( Kmeans::new(NUM_COLOR_CLUSTERS, &image, RGBColor::distance, |items| {
+            let item = *items[0];
+            let others = items[1..].iter().copied().copied().collect::<Vec<_>>();
+            item.average(others).into()
+        }));
+        KMEANS_READY.store(true, Ordering::SeqCst);
+        TRAINING_TIME.store(start.elapsed().as_millis() as u64, Ordering::SeqCst);
+    });
+}
  
 pub fn groundline_k_means(ys: Vec<u8>, us: Vec<u8>, vs: Vec<u8>, width: i64, height: i64, uv_row_stride: i64, uv_pixel_stride: i64) -> ZeroCopyBuffer<Vec<u8>> {
-    let image = scarlet_yuv_rgb(ys, us, vs, width, height, uv_row_stride, uv_pixel_stride);
-    let mut kmeans = kmeans::Kmeans::new(NUM_COLOR_CLUSTERS, &image, RGBColor::distance, |items| {
-        let item = *items[0];
-        let others = items[1..].iter().copied().copied().collect::<Vec<_>>();
-        item.average(others).into()
-    });
-    let mut result = vec![];
-    for color in image {
-        let mean = kmeans.best_matching_mean(&color);
-        let bytes: (u8, u8, u8) = mean.into();
-        result.push(bytes.0);
-        result.push(bytes.1);
-        result.push(bytes.2);
-        result.push(u8::MAX);
+    if kmeans_ready() {
+        let image = scarlet_yuv_rgb(ys, us, vs, width, height, uv_row_stride, uv_pixel_stride);
+        let mut result = vec![];
+        COLOR_MEANS.lock().unwrap().as_ref().map(|kmeans| {
+            for color in image {
+                let mean = kmeans.best_matching_mean(&color);
+                let bytes: (u8, u8, u8) = mean.into();
+                result.push(bytes.0);
+                result.push(bytes.1);
+                result.push(bytes.2);
+                result.push(u8::MAX);
+            }
+        });
+        ZeroCopyBuffer(result)
+    } else {
+        groundline_sample_overlay(ys, us, vs, width, height, uv_row_stride, uv_pixel_stride)
     }
-    ZeroCopyBuffer(result)
-    // Next steps:
-    // * Use the scarlet crate's RGBColor type. Write a function that takes all of the above and generates a Vec<RGBColor>. 
-    // * Use the distance() and average() or weighted_average() methods to do KMeans.
-    // * Create a classifier atop kmeans.
 }
 
 //fn extract_pixels_from(colors: &Vec<RGBColor>, width: i64, ul_corner: (usize, usize), dimensions: (usize, usize)) -> 
@@ -195,10 +223,6 @@ fn downsampled_to(ys: &Vec<u8>, width: i64, height: i64, target_width: i64, targ
         }
     }
     result
-}
-
-lazy_static! {
-    static ref POS: Mutex<RobotSensorPosition> = Mutex::new(RobotSensorPosition::new(BOT));
 }
 
 pub fn reset_position_estimate() {

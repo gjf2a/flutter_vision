@@ -2,6 +2,16 @@ use super::*;
 // Section: wire functions
 
 #[no_mangle]
+pub extern "C" fn wire_kmeans_ready(port_: i64) {
+    wire_kmeans_ready_impl(port_)
+}
+
+#[no_mangle]
+pub extern "C" fn wire_training_time(port_: i64) {
+    wire_training_time_impl(port_)
+}
+
+#[no_mangle]
 pub extern "C" fn wire_intensity_rgba(port_: i64, intensities: *mut wire_uint_8_list) {
     wire_intensity_rgba_impl(port_, intensities)
 }
@@ -64,6 +74,29 @@ pub extern "C" fn wire_groundline_sample_overlay(
     uv_pixel_stride: i64,
 ) {
     wire_groundline_sample_overlay_impl(
+        port_,
+        ys,
+        us,
+        vs,
+        width,
+        height,
+        uv_row_stride,
+        uv_pixel_stride,
+    )
+}
+
+#[no_mangle]
+pub extern "C" fn wire_start_kmeans_training(
+    port_: i64,
+    ys: *mut wire_uint_8_list,
+    us: *mut wire_uint_8_list,
+    vs: *mut wire_uint_8_list,
+    width: i64,
+    height: i64,
+    uv_row_stride: i64,
+    uv_pixel_stride: i64,
+) {
+    wire_start_kmeans_training_impl(
         port_,
         ys,
         us,
