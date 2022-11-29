@@ -17,118 +17,28 @@ pub extern "C" fn wire_intensity_rgba(port_: i64, intensities: *mut wire_uint_8_
 }
 
 #[no_mangle]
-pub extern "C" fn wire_yuv_rgba(
-    port_: i64,
-    ys: *mut wire_uint_8_list,
-    us: *mut wire_uint_8_list,
-    vs: *mut wire_uint_8_list,
-    width: i64,
-    height: i64,
-    uv_row_stride: i64,
-    uv_pixel_stride: i64,
-) {
-    wire_yuv_rgba_impl(
-        port_,
-        ys,
-        us,
-        vs,
-        width,
-        height,
-        uv_row_stride,
-        uv_pixel_stride,
-    )
+pub extern "C" fn wire_yuv_rgba(port_: i64, img: *mut wire_ImageData) {
+    wire_yuv_rgba_impl(port_, img)
 }
 
 #[no_mangle]
-pub extern "C" fn wire_color_count(
-    port_: i64,
-    ys: *mut wire_uint_8_list,
-    us: *mut wire_uint_8_list,
-    vs: *mut wire_uint_8_list,
-    width: i64,
-    height: i64,
-    uv_row_stride: i64,
-    uv_pixel_stride: i64,
-) {
-    wire_color_count_impl(
-        port_,
-        ys,
-        us,
-        vs,
-        width,
-        height,
-        uv_row_stride,
-        uv_pixel_stride,
-    )
+pub extern "C" fn wire_color_count(port_: i64, img: *mut wire_ImageData) {
+    wire_color_count_impl(port_, img)
 }
 
 #[no_mangle]
-pub extern "C" fn wire_groundline_sample_overlay(
-    port_: i64,
-    ys: *mut wire_uint_8_list,
-    us: *mut wire_uint_8_list,
-    vs: *mut wire_uint_8_list,
-    width: i64,
-    height: i64,
-    uv_row_stride: i64,
-    uv_pixel_stride: i64,
-) {
-    wire_groundline_sample_overlay_impl(
-        port_,
-        ys,
-        us,
-        vs,
-        width,
-        height,
-        uv_row_stride,
-        uv_pixel_stride,
-    )
+pub extern "C" fn wire_groundline_sample_overlay(port_: i64, img: *mut wire_ImageData) {
+    wire_groundline_sample_overlay_impl(port_, img)
 }
 
 #[no_mangle]
-pub extern "C" fn wire_start_kmeans_training(
-    port_: i64,
-    ys: *mut wire_uint_8_list,
-    us: *mut wire_uint_8_list,
-    vs: *mut wire_uint_8_list,
-    width: i64,
-    height: i64,
-    uv_row_stride: i64,
-    uv_pixel_stride: i64,
-) {
-    wire_start_kmeans_training_impl(
-        port_,
-        ys,
-        us,
-        vs,
-        width,
-        height,
-        uv_row_stride,
-        uv_pixel_stride,
-    )
+pub extern "C" fn wire_start_kmeans_training(port_: i64, img: *mut wire_ImageData) {
+    wire_start_kmeans_training_impl(port_, img)
 }
 
 #[no_mangle]
-pub extern "C" fn wire_groundline_k_means(
-    port_: i64,
-    ys: *mut wire_uint_8_list,
-    us: *mut wire_uint_8_list,
-    vs: *mut wire_uint_8_list,
-    width: i64,
-    height: i64,
-    uv_row_stride: i64,
-    uv_pixel_stride: i64,
-) {
-    wire_groundline_k_means_impl(
-        port_,
-        ys,
-        us,
-        vs,
-        width,
-        height,
-        uv_row_stride,
-        uv_pixel_stride,
-    )
+pub extern "C" fn wire_groundline_k_means(port_: i64, img: *mut wire_ImageData) {
+    wire_groundline_k_means_impl(port_, img)
 }
 
 #[no_mangle]
@@ -160,6 +70,11 @@ pub extern "C" fn wire_parse_sensor_data(port_: i64, incoming_data: *mut wire_ui
 // Section: allocate functions
 
 #[no_mangle]
+pub extern "C" fn new_box_autoadd_image_data_0() -> *mut wire_ImageData {
+    support::new_leak_box_ptr(wire_ImageData::new_with_null_ptr())
+}
+
+#[no_mangle]
 pub extern "C" fn new_uint_8_list_0(len: i32) -> *mut wire_uint_8_list {
     let ans = wire_uint_8_list {
         ptr: support::new_leak_vec_ptr(Default::default(), len),
@@ -176,6 +91,26 @@ impl Wire2Api<String> for *mut wire_uint_8_list {
         String::from_utf8_lossy(&vec).into_owned()
     }
 }
+impl Wire2Api<ImageData> for *mut wire_ImageData {
+    fn wire2api(self) -> ImageData {
+        let wrap = unsafe { support::box_from_leak_ptr(self) };
+        Wire2Api::<ImageData>::wire2api(*wrap).into()
+    }
+}
+
+impl Wire2Api<ImageData> for wire_ImageData {
+    fn wire2api(self) -> ImageData {
+        ImageData {
+            ys: self.ys.wire2api(),
+            us: self.us.wire2api(),
+            vs: self.vs.wire2api(),
+            width: self.width.wire2api(),
+            height: self.height.wire2api(),
+            uv_row_stride: self.uv_row_stride.wire2api(),
+            uv_pixel_stride: self.uv_pixel_stride.wire2api(),
+        }
+    }
+}
 
 impl Wire2Api<Vec<u8>> for *mut wire_uint_8_list {
     fn wire2api(self) -> Vec<u8> {
@@ -186,6 +121,18 @@ impl Wire2Api<Vec<u8>> for *mut wire_uint_8_list {
     }
 }
 // Section: wire structs
+
+#[repr(C)]
+#[derive(Clone)]
+pub struct wire_ImageData {
+    ys: *mut wire_uint_8_list,
+    us: *mut wire_uint_8_list,
+    vs: *mut wire_uint_8_list,
+    width: i64,
+    height: i64,
+    uv_row_stride: i64,
+    uv_pixel_stride: i64,
+}
 
 #[repr(C)]
 #[derive(Clone)]
@@ -203,6 +150,20 @@ pub trait NewWithNullPtr {
 impl<T> NewWithNullPtr for *mut T {
     fn new_with_null_ptr() -> Self {
         std::ptr::null_mut()
+    }
+}
+
+impl NewWithNullPtr for wire_ImageData {
+    fn new_with_null_ptr() -> Self {
+        Self {
+            ys: core::ptr::null_mut(),
+            us: core::ptr::null_mut(),
+            vs: core::ptr::null_mut(),
+            width: Default::default(),
+            height: Default::default(),
+            uv_row_stride: Default::default(),
+            uv_pixel_stride: Default::default(),
+        }
     }
 }
 

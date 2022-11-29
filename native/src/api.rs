@@ -25,6 +25,16 @@ pub fn training_time() -> i64 {
     TRAINING_TIME.load(Ordering::SeqCst) as i64
 }
 
+pub struct ImageData {
+    pub ys: Vec<u8>,
+    pub us: Vec<u8>,
+    pub vs: Vec<u8>,
+    pub width: i64,
+    pub height: i64,
+    pub uv_row_stride: i64,
+    pub uv_pixel_stride: i64,
+}
+
 pub struct SensorData {
     pub sonar_front: i64,
     pub sonar_left: i64,
@@ -52,12 +62,12 @@ pub fn intensity_rgba(intensities: Vec<u8>) -> ZeroCopyBuffer<Vec<u8>> {
     ZeroCopyBuffer(result)
 }
 
-pub fn yuv_rgba(ys: Vec<u8>, us: Vec<u8>, vs: Vec<u8>, width: i64, height: i64, uv_row_stride: i64, uv_pixel_stride: i64) -> ZeroCopyBuffer<Vec<u8>> {
-    ZeroCopyBuffer(inner_yuv_rgba(ys, us, vs, width, height, uv_row_stride, uv_pixel_stride))
+pub fn yuv_rgba(img: ImageData) -> ZeroCopyBuffer<Vec<u8>> {
+    ZeroCopyBuffer(inner_yuv_rgba(&img))
 }
 
-pub fn color_count(ys: Vec<u8>, us: Vec<u8>, vs: Vec<u8>, width: i64, height: i64, uv_row_stride: i64, uv_pixel_stride: i64) -> i64 {
-    let rgba = inner_yuv_rgba(ys, us, vs, width, height, uv_row_stride, uv_pixel_stride);
+pub fn color_count(img: ImageData) -> i64 {
+    let rgba = inner_yuv_rgba(&img);
     let mut distinct_colors = BTreeSet::new();
     for i in (0..rgba.len()).step_by(4) {
         let color = (rgba[i], rgba[i+1], rgba[i+2]);
@@ -71,28 +81,28 @@ const UPPER_SAMPLE_WIDTH: f64 = 0.25;
 const LOWER_SAMPLE_WIDTH: f64 = 0.3;
 const LOWER_SAMPLE_HEIGHT: f64 = 0.25;
 
-pub fn groundline_sample_overlay(ys: Vec<u8>, us: Vec<u8>, vs: Vec<u8>, width: i64, height: i64, uv_row_stride: i64, uv_pixel_stride: i64) -> ZeroCopyBuffer<Vec<u8>> {
-    let mut image = inner_yuv_rgba(ys, us, vs, width, height, uv_row_stride, uv_pixel_stride);
-    let upper_max_y = (height as f64 * UPPER_SAMPLE_HEIGHT) as i64;
-    let upper_left_x_end = (width as f64 * UPPER_SAMPLE_WIDTH) as i64;
-    let upper_right_x_start = width - upper_left_x_end;
-    let lower_x_start = (width as f64 * (0.5 - LOWER_SAMPLE_WIDTH / 2.0)) as i64;
-    let lower_width = (width as f64 * LOWER_SAMPLE_WIDTH) as i64;
-    let lower_height = (height as f64 * LOWER_SAMPLE_HEIGHT) as i64;
-    let lower_y_start = (height as f64 * (1.0 - LOWER_SAMPLE_HEIGHT)) as i64;
+pub fn groundline_sample_overlay(img: ImageData) -> ZeroCopyBuffer<Vec<u8>> {
+    let mut image = inner_yuv_rgba(&img);
+    let upper_max_y = (img.height as f64 * UPPER_SAMPLE_HEIGHT) as i64;
+    let upper_left_x_end = (img.width as f64 * UPPER_SAMPLE_WIDTH) as i64;
+    let upper_right_x_start = img.width - upper_left_x_end;
+    let lower_x_start = (img.width as f64 * (0.5 - LOWER_SAMPLE_WIDTH / 2.0)) as i64;
+    let lower_width = (img.width as f64 * LOWER_SAMPLE_WIDTH) as i64;
+    let lower_height = (img.height as f64 * LOWER_SAMPLE_HEIGHT) as i64;
+    let lower_y_start = (img.height as f64 * (1.0 - LOWER_SAMPLE_HEIGHT)) as i64;
     let white = (255, 255, 255);
-    overlay_rectangle_on(&mut image, width, (0, 0), (upper_left_x_end, upper_max_y), white);
-    overlay_rectangle_on(&mut image, width, (upper_right_x_start, 0), (upper_left_x_end, upper_max_y), white);
-    overlay_rectangle_on(&mut image, width, (lower_x_start, lower_y_start), (lower_width, lower_height), white);
+    overlay_rectangle_on(&mut image, img.width, (0, 0), (upper_left_x_end, upper_max_y), white);
+    overlay_rectangle_on(&mut image, img.width, (upper_right_x_start, 0), (upper_left_x_end, upper_max_y), white);
+    overlay_rectangle_on(&mut image, img.width, (lower_x_start, lower_y_start), (lower_width, lower_height), white);
     ZeroCopyBuffer(image)
 }
 
 const NUM_COLOR_CLUSTERS: usize = 2;
 
-pub fn start_kmeans_training(ys: Vec<u8>, us: Vec<u8>, vs: Vec<u8>, width: i64, height: i64, uv_row_stride: i64, uv_pixel_stride: i64) {
+pub fn start_kmeans_training(img: ImageData) {
     std::thread::spawn(move || {
         let start = Instant::now();
-        let image = scarlet_yuv_rgb(ys, us, vs, width, height, uv_row_stride, uv_pixel_stride);
+        let image = scarlet_yuv_rgb(&img);
         let mut color_means = COLOR_MEANS.lock().unwrap();
         *color_means = Some( Kmeans::new(NUM_COLOR_CLUSTERS, &image, RGBColor::distance, |items| {
             let item = *items[0];
@@ -104,9 +114,9 @@ pub fn start_kmeans_training(ys: Vec<u8>, us: Vec<u8>, vs: Vec<u8>, width: i64, 
     });
 }
  
-pub fn groundline_k_means(ys: Vec<u8>, us: Vec<u8>, vs: Vec<u8>, width: i64, height: i64, uv_row_stride: i64, uv_pixel_stride: i64) -> ZeroCopyBuffer<Vec<u8>> {
+pub fn groundline_k_means(img: ImageData) -> ZeroCopyBuffer<Vec<u8>> {
     if kmeans_ready() {
-        let image = scarlet_yuv_rgb(ys, us, vs, width, height, uv_row_stride, uv_pixel_stride);
+        let image = scarlet_yuv_rgb(&img);
         let mut result = vec![];
         COLOR_MEANS.lock().unwrap().as_ref().map(|kmeans| {
             for color in image {
@@ -120,17 +130,17 @@ pub fn groundline_k_means(ys: Vec<u8>, us: Vec<u8>, vs: Vec<u8>, width: i64, hei
         });
         ZeroCopyBuffer(result)
     } else {
-        groundline_sample_overlay(ys, us, vs, width, height, uv_row_stride, uv_pixel_stride)
+        groundline_sample_overlay(img)
     }
 }
 
 //fn extract_pixels_from(colors: &Vec<RGBColor>, width: i64, ul_corner: (usize, usize), dimensions: (usize, usize)) -> 
 
-fn scarlet_yuv_rgb(ys: Vec<u8>, us: Vec<u8>, vs: Vec<u8>, width: i64, height: i64, uv_row_stride: i64, uv_pixel_stride: i64) -> Vec<RGBColor> {
+fn scarlet_yuv_rgb(img: &ImageData) -> Vec<RGBColor> {
     let mut result = Vec::new();
     generic_yuv_rgba(|rgb| {
         result.push(rgb.into());
-    }, ys, us, vs, width, height, uv_row_stride, uv_pixel_stride);
+    }, img);
     result
 }
 
@@ -139,23 +149,23 @@ fn point2index(x: i64, y: i64, width: i64) -> usize {
 }
 
 /// Translated and adapted from: https://stackoverflow.com/a/57604820/906268
-fn inner_yuv_rgba(ys: Vec<u8>, us: Vec<u8>, vs: Vec<u8>, width: i64, height: i64, uv_row_stride: i64, uv_pixel_stride: i64) -> Vec<u8> {
+fn inner_yuv_rgba(img: &ImageData) -> Vec<u8> {
     let mut result = Vec::new();
     generic_yuv_rgba(|(r, g, b)| {
         result.push(r);
         result.push(g);
         result.push(b);
         result.push(u8::MAX);
-    }, ys, us, vs, width, height, uv_row_stride, uv_pixel_stride);
+    }, img);
     result
 }
 
-fn generic_yuv_rgba<F: FnMut((u8, u8, u8))>(mut add: F, ys: Vec<u8>, us: Vec<u8>, vs: Vec<u8>, width: i64, height: i64, uv_row_stride: i64, uv_pixel_stride: i64) {
-    for y in 0..height {
-        for x in 0..width {
-            let uv_index = (uv_pixel_stride * (x/2) + uv_row_stride * (y/2)) as usize;
-            let index = (y * width + x) as usize;
-            let rgb = yuv2rgb(ys[index] as i64, us[uv_index] as i64, vs[uv_index] as i64);
+fn generic_yuv_rgba<F: FnMut((u8, u8, u8))>(mut add: F, img: &ImageData) {
+    for y in 0..img.height {
+        for x in 0..img.width {
+            let uv_index = (img.uv_pixel_stride * (x/2) + img.uv_row_stride * (y/2)) as usize;
+            let index = (y * img.width + x) as usize;
+            let rgb = yuv2rgb(img.ys[index] as i64, img.us[uv_index] as i64, img.vs[uv_index] as i64);
             add(rgb);
         }
     }

@@ -52,16 +52,7 @@ fn wire_intensity_rgba_impl(port_: MessagePort, intensities: impl Wire2Api<Vec<u
         },
     )
 }
-fn wire_yuv_rgba_impl(
-    port_: MessagePort,
-    ys: impl Wire2Api<Vec<u8>> + UnwindSafe,
-    us: impl Wire2Api<Vec<u8>> + UnwindSafe,
-    vs: impl Wire2Api<Vec<u8>> + UnwindSafe,
-    width: impl Wire2Api<i64> + UnwindSafe,
-    height: impl Wire2Api<i64> + UnwindSafe,
-    uv_row_stride: impl Wire2Api<i64> + UnwindSafe,
-    uv_pixel_stride: impl Wire2Api<i64> + UnwindSafe,
-) {
+fn wire_yuv_rgba_impl(port_: MessagePort, img: impl Wire2Api<ImageData> + UnwindSafe) {
     FLUTTER_RUST_BRIDGE_HANDLER.wrap(
         WrapInfo {
             debug_name: "yuv_rgba",
@@ -69,37 +60,12 @@ fn wire_yuv_rgba_impl(
             mode: FfiCallMode::Normal,
         },
         move || {
-            let api_ys = ys.wire2api();
-            let api_us = us.wire2api();
-            let api_vs = vs.wire2api();
-            let api_width = width.wire2api();
-            let api_height = height.wire2api();
-            let api_uv_row_stride = uv_row_stride.wire2api();
-            let api_uv_pixel_stride = uv_pixel_stride.wire2api();
-            move |task_callback| {
-                Ok(yuv_rgba(
-                    api_ys,
-                    api_us,
-                    api_vs,
-                    api_width,
-                    api_height,
-                    api_uv_row_stride,
-                    api_uv_pixel_stride,
-                ))
-            }
+            let api_img = img.wire2api();
+            move |task_callback| Ok(yuv_rgba(api_img))
         },
     )
 }
-fn wire_color_count_impl(
-    port_: MessagePort,
-    ys: impl Wire2Api<Vec<u8>> + UnwindSafe,
-    us: impl Wire2Api<Vec<u8>> + UnwindSafe,
-    vs: impl Wire2Api<Vec<u8>> + UnwindSafe,
-    width: impl Wire2Api<i64> + UnwindSafe,
-    height: impl Wire2Api<i64> + UnwindSafe,
-    uv_row_stride: impl Wire2Api<i64> + UnwindSafe,
-    uv_pixel_stride: impl Wire2Api<i64> + UnwindSafe,
-) {
+fn wire_color_count_impl(port_: MessagePort, img: impl Wire2Api<ImageData> + UnwindSafe) {
     FLUTTER_RUST_BRIDGE_HANDLER.wrap(
         WrapInfo {
             debug_name: "color_count",
@@ -107,36 +73,14 @@ fn wire_color_count_impl(
             mode: FfiCallMode::Normal,
         },
         move || {
-            let api_ys = ys.wire2api();
-            let api_us = us.wire2api();
-            let api_vs = vs.wire2api();
-            let api_width = width.wire2api();
-            let api_height = height.wire2api();
-            let api_uv_row_stride = uv_row_stride.wire2api();
-            let api_uv_pixel_stride = uv_pixel_stride.wire2api();
-            move |task_callback| {
-                Ok(color_count(
-                    api_ys,
-                    api_us,
-                    api_vs,
-                    api_width,
-                    api_height,
-                    api_uv_row_stride,
-                    api_uv_pixel_stride,
-                ))
-            }
+            let api_img = img.wire2api();
+            move |task_callback| Ok(color_count(api_img))
         },
     )
 }
 fn wire_groundline_sample_overlay_impl(
     port_: MessagePort,
-    ys: impl Wire2Api<Vec<u8>> + UnwindSafe,
-    us: impl Wire2Api<Vec<u8>> + UnwindSafe,
-    vs: impl Wire2Api<Vec<u8>> + UnwindSafe,
-    width: impl Wire2Api<i64> + UnwindSafe,
-    height: impl Wire2Api<i64> + UnwindSafe,
-    uv_row_stride: impl Wire2Api<i64> + UnwindSafe,
-    uv_pixel_stride: impl Wire2Api<i64> + UnwindSafe,
+    img: impl Wire2Api<ImageData> + UnwindSafe,
 ) {
     FLUTTER_RUST_BRIDGE_HANDLER.wrap(
         WrapInfo {
@@ -145,37 +89,12 @@ fn wire_groundline_sample_overlay_impl(
             mode: FfiCallMode::Normal,
         },
         move || {
-            let api_ys = ys.wire2api();
-            let api_us = us.wire2api();
-            let api_vs = vs.wire2api();
-            let api_width = width.wire2api();
-            let api_height = height.wire2api();
-            let api_uv_row_stride = uv_row_stride.wire2api();
-            let api_uv_pixel_stride = uv_pixel_stride.wire2api();
-            move |task_callback| {
-                Ok(groundline_sample_overlay(
-                    api_ys,
-                    api_us,
-                    api_vs,
-                    api_width,
-                    api_height,
-                    api_uv_row_stride,
-                    api_uv_pixel_stride,
-                ))
-            }
+            let api_img = img.wire2api();
+            move |task_callback| Ok(groundline_sample_overlay(api_img))
         },
     )
 }
-fn wire_start_kmeans_training_impl(
-    port_: MessagePort,
-    ys: impl Wire2Api<Vec<u8>> + UnwindSafe,
-    us: impl Wire2Api<Vec<u8>> + UnwindSafe,
-    vs: impl Wire2Api<Vec<u8>> + UnwindSafe,
-    width: impl Wire2Api<i64> + UnwindSafe,
-    height: impl Wire2Api<i64> + UnwindSafe,
-    uv_row_stride: impl Wire2Api<i64> + UnwindSafe,
-    uv_pixel_stride: impl Wire2Api<i64> + UnwindSafe,
-) {
+fn wire_start_kmeans_training_impl(port_: MessagePort, img: impl Wire2Api<ImageData> + UnwindSafe) {
     FLUTTER_RUST_BRIDGE_HANDLER.wrap(
         WrapInfo {
             debug_name: "start_kmeans_training",
@@ -183,37 +102,12 @@ fn wire_start_kmeans_training_impl(
             mode: FfiCallMode::Normal,
         },
         move || {
-            let api_ys = ys.wire2api();
-            let api_us = us.wire2api();
-            let api_vs = vs.wire2api();
-            let api_width = width.wire2api();
-            let api_height = height.wire2api();
-            let api_uv_row_stride = uv_row_stride.wire2api();
-            let api_uv_pixel_stride = uv_pixel_stride.wire2api();
-            move |task_callback| {
-                Ok(start_kmeans_training(
-                    api_ys,
-                    api_us,
-                    api_vs,
-                    api_width,
-                    api_height,
-                    api_uv_row_stride,
-                    api_uv_pixel_stride,
-                ))
-            }
+            let api_img = img.wire2api();
+            move |task_callback| Ok(start_kmeans_training(api_img))
         },
     )
 }
-fn wire_groundline_k_means_impl(
-    port_: MessagePort,
-    ys: impl Wire2Api<Vec<u8>> + UnwindSafe,
-    us: impl Wire2Api<Vec<u8>> + UnwindSafe,
-    vs: impl Wire2Api<Vec<u8>> + UnwindSafe,
-    width: impl Wire2Api<i64> + UnwindSafe,
-    height: impl Wire2Api<i64> + UnwindSafe,
-    uv_row_stride: impl Wire2Api<i64> + UnwindSafe,
-    uv_pixel_stride: impl Wire2Api<i64> + UnwindSafe,
-) {
+fn wire_groundline_k_means_impl(port_: MessagePort, img: impl Wire2Api<ImageData> + UnwindSafe) {
     FLUTTER_RUST_BRIDGE_HANDLER.wrap(
         WrapInfo {
             debug_name: "groundline_k_means",
@@ -221,24 +115,8 @@ fn wire_groundline_k_means_impl(
             mode: FfiCallMode::Normal,
         },
         move || {
-            let api_ys = ys.wire2api();
-            let api_us = us.wire2api();
-            let api_vs = vs.wire2api();
-            let api_width = width.wire2api();
-            let api_height = height.wire2api();
-            let api_uv_row_stride = uv_row_stride.wire2api();
-            let api_uv_pixel_stride = uv_pixel_stride.wire2api();
-            move |task_callback| {
-                Ok(groundline_k_means(
-                    api_ys,
-                    api_us,
-                    api_vs,
-                    api_width,
-                    api_height,
-                    api_uv_row_stride,
-                    api_uv_pixel_stride,
-                ))
-            }
+            let api_img = img.wire2api();
+            move |task_callback| Ok(groundline_k_means(api_img))
         },
     )
 }
@@ -339,6 +217,7 @@ impl Wire2Api<i64> for i64 {
         self
     }
 }
+
 impl Wire2Api<u8> for u8 {
     fn wire2api(self) -> u8 {
         self
