@@ -20,63 +20,24 @@ abstract class Native {
 
   FlutterRustBridgeTaskConstMeta get kIntensityRgbaConstMeta;
 
-  Future<Uint8List> yuvRgba(
-      {required Uint8List ys,
-      required Uint8List us,
-      required Uint8List vs,
-      required int width,
-      required int height,
-      required int uvRowStride,
-      required int uvPixelStride,
-      dynamic hint});
+  Future<Uint8List> yuvRgba({required ImageData img, dynamic hint});
 
   FlutterRustBridgeTaskConstMeta get kYuvRgbaConstMeta;
 
-  Future<int> colorCount(
-      {required Uint8List ys,
-      required Uint8List us,
-      required Uint8List vs,
-      required int width,
-      required int height,
-      required int uvRowStride,
-      required int uvPixelStride,
-      dynamic hint});
+  Future<int> colorCount({required ImageData img, dynamic hint});
 
   FlutterRustBridgeTaskConstMeta get kColorCountConstMeta;
 
   Future<Uint8List> groundlineSampleOverlay(
-      {required Uint8List ys,
-      required Uint8List us,
-      required Uint8List vs,
-      required int width,
-      required int height,
-      required int uvRowStride,
-      required int uvPixelStride,
-      dynamic hint});
+      {required ImageData img, dynamic hint});
 
   FlutterRustBridgeTaskConstMeta get kGroundlineSampleOverlayConstMeta;
 
-  Future<void> startKmeansTraining(
-      {required Uint8List ys,
-      required Uint8List us,
-      required Uint8List vs,
-      required int width,
-      required int height,
-      required int uvRowStride,
-      required int uvPixelStride,
-      dynamic hint});
+  Future<void> startKmeansTraining({required ImageData img, dynamic hint});
 
   FlutterRustBridgeTaskConstMeta get kStartKmeansTrainingConstMeta;
 
-  Future<Uint8List> groundlineKMeans(
-      {required Uint8List ys,
-      required Uint8List us,
-      required Uint8List vs,
-      required int width,
-      required int height,
-      required int uvRowStride,
-      required int uvPixelStride,
-      dynamic hint});
+  Future<Uint8List> groundlineKMeans({required ImageData img, dynamic hint});
 
   FlutterRustBridgeTaskConstMeta get kGroundlineKMeansConstMeta;
 
@@ -111,6 +72,26 @@ class CorrelationFlow {
   CorrelationFlow({
     required this.dx,
     required this.dy,
+  });
+}
+
+class ImageData {
+  final Uint8List ys;
+  final Uint8List us;
+  final Uint8List vs;
+  final int width;
+  final int height;
+  final int uvRowStride;
+  final int uvPixelStride;
+
+  ImageData({
+    required this.ys,
+    required this.us,
+    required this.vs,
+    required this.width,
+    required this.height,
+    required this.uvRowStride,
+    required this.uvPixelStride,
   });
 }
 

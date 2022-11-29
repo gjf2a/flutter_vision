@@ -55,18 +55,22 @@ Future<dartui.Image> makeGrayscaleFrom(CameraImage img) async {
   return makeImageFrom(proc, img.width, img.height);
 }
 
+ImageData from(CameraImage img) {
+  return ImageData(ys: img.planes[0].bytes, us: img.planes[1].bytes, vs: img.planes[2].bytes, width: img.width, height: img.height, uvRowStride: img.planes[1].bytesPerRow, uvPixelStride: img.planes[1].bytesPerPixel!);
+}
+
 Future<dartui.Image> makeColorFrom(CameraImage img) async {
-  Uint8List proc = await api.yuvRgba(ys: img.planes[0].bytes, us: img.planes[1].bytes, vs: img.planes[2].bytes, width: img.width, height: img.height, uvRowStride: img.planes[1].bytesPerRow, uvPixelStride: img.planes[1].bytesPerPixel!);
+  Uint8List proc = await api.yuvRgba(img: from(img));
   return makeImageFrom(proc, img.width, img.height);
 }
 
 Future<dartui.Image> makeGroundlineSampleOverlay(CameraImage img) async {
-  Uint8List proc = await api.groundlineSampleOverlay(ys: img.planes[0].bytes, us: img.planes[1].bytes, vs: img.planes[2].bytes, width: img.width, height: img.height, uvRowStride: img.planes[1].bytesPerRow, uvPixelStride: img.planes[1].bytesPerPixel!);
+  Uint8List proc = await api.groundlineSampleOverlay(img: from(img));
   return makeImageFrom(proc, img.width, img.height);
 }
 
 Future<dartui.Image> makeGroundlineKmeansFilter(CameraImage img) async {
-  Uint8List proc = await api.groundlineKMeans(ys: img.planes[0].bytes, us: img.planes[1].bytes, vs: img.planes[2].bytes, width: img.width, height: img.height, uvRowStride: img.planes[1].bytesPerRow, uvPixelStride: img.planes[1].bytesPerPixel!);
+  Uint8List proc = await api.groundlineKMeans(img: from(img));
   return makeImageFrom(proc, img.width, img.height);
 }
 

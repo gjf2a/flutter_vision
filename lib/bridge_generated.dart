@@ -70,199 +70,85 @@ class NativeImpl implements Native {
         argNames: ["intensities"],
       );
 
-  Future<Uint8List> yuvRgba(
-          {required Uint8List ys,
-          required Uint8List us,
-          required Uint8List vs,
-          required int width,
-          required int height,
-          required int uvRowStride,
-          required int uvPixelStride,
-          dynamic hint}) =>
+  Future<Uint8List> yuvRgba({required ImageData img, dynamic hint}) =>
       _platform.executeNormal(FlutterRustBridgeTask(
         callFfi: (port_) => _platform.inner.wire_yuv_rgba(
-            port_,
-            _platform.api2wire_uint_8_list(ys),
-            _platform.api2wire_uint_8_list(us),
-            _platform.api2wire_uint_8_list(vs),
-            _platform.api2wire_i64(width),
-            _platform.api2wire_i64(height),
-            _platform.api2wire_i64(uvRowStride),
-            _platform.api2wire_i64(uvPixelStride)),
+            port_, _platform.api2wire_box_autoadd_image_data(img)),
         parseSuccessData: _wire2api_ZeroCopyBuffer_Uint8List,
         constMeta: kYuvRgbaConstMeta,
-        argValues: [ys, us, vs, width, height, uvRowStride, uvPixelStride],
+        argValues: [img],
         hint: hint,
       ));
 
   FlutterRustBridgeTaskConstMeta get kYuvRgbaConstMeta =>
       const FlutterRustBridgeTaskConstMeta(
         debugName: "yuv_rgba",
-        argNames: [
-          "ys",
-          "us",
-          "vs",
-          "width",
-          "height",
-          "uvRowStride",
-          "uvPixelStride"
-        ],
+        argNames: ["img"],
       );
 
-  Future<int> colorCount(
-          {required Uint8List ys,
-          required Uint8List us,
-          required Uint8List vs,
-          required int width,
-          required int height,
-          required int uvRowStride,
-          required int uvPixelStride,
-          dynamic hint}) =>
+  Future<int> colorCount({required ImageData img, dynamic hint}) =>
       _platform.executeNormal(FlutterRustBridgeTask(
         callFfi: (port_) => _platform.inner.wire_color_count(
-            port_,
-            _platform.api2wire_uint_8_list(ys),
-            _platform.api2wire_uint_8_list(us),
-            _platform.api2wire_uint_8_list(vs),
-            _platform.api2wire_i64(width),
-            _platform.api2wire_i64(height),
-            _platform.api2wire_i64(uvRowStride),
-            _platform.api2wire_i64(uvPixelStride)),
+            port_, _platform.api2wire_box_autoadd_image_data(img)),
         parseSuccessData: _wire2api_i64,
         constMeta: kColorCountConstMeta,
-        argValues: [ys, us, vs, width, height, uvRowStride, uvPixelStride],
+        argValues: [img],
         hint: hint,
       ));
 
   FlutterRustBridgeTaskConstMeta get kColorCountConstMeta =>
       const FlutterRustBridgeTaskConstMeta(
         debugName: "color_count",
-        argNames: [
-          "ys",
-          "us",
-          "vs",
-          "width",
-          "height",
-          "uvRowStride",
-          "uvPixelStride"
-        ],
+        argNames: ["img"],
       );
 
   Future<Uint8List> groundlineSampleOverlay(
-          {required Uint8List ys,
-          required Uint8List us,
-          required Uint8List vs,
-          required int width,
-          required int height,
-          required int uvRowStride,
-          required int uvPixelStride,
-          dynamic hint}) =>
+          {required ImageData img, dynamic hint}) =>
       _platform.executeNormal(FlutterRustBridgeTask(
         callFfi: (port_) => _platform.inner.wire_groundline_sample_overlay(
-            port_,
-            _platform.api2wire_uint_8_list(ys),
-            _platform.api2wire_uint_8_list(us),
-            _platform.api2wire_uint_8_list(vs),
-            _platform.api2wire_i64(width),
-            _platform.api2wire_i64(height),
-            _platform.api2wire_i64(uvRowStride),
-            _platform.api2wire_i64(uvPixelStride)),
+            port_, _platform.api2wire_box_autoadd_image_data(img)),
         parseSuccessData: _wire2api_ZeroCopyBuffer_Uint8List,
         constMeta: kGroundlineSampleOverlayConstMeta,
-        argValues: [ys, us, vs, width, height, uvRowStride, uvPixelStride],
+        argValues: [img],
         hint: hint,
       ));
 
   FlutterRustBridgeTaskConstMeta get kGroundlineSampleOverlayConstMeta =>
       const FlutterRustBridgeTaskConstMeta(
         debugName: "groundline_sample_overlay",
-        argNames: [
-          "ys",
-          "us",
-          "vs",
-          "width",
-          "height",
-          "uvRowStride",
-          "uvPixelStride"
-        ],
+        argNames: ["img"],
       );
 
-  Future<void> startKmeansTraining(
-          {required Uint8List ys,
-          required Uint8List us,
-          required Uint8List vs,
-          required int width,
-          required int height,
-          required int uvRowStride,
-          required int uvPixelStride,
-          dynamic hint}) =>
+  Future<void> startKmeansTraining({required ImageData img, dynamic hint}) =>
       _platform.executeNormal(FlutterRustBridgeTask(
         callFfi: (port_) => _platform.inner.wire_start_kmeans_training(
-            port_,
-            _platform.api2wire_uint_8_list(ys),
-            _platform.api2wire_uint_8_list(us),
-            _platform.api2wire_uint_8_list(vs),
-            _platform.api2wire_i64(width),
-            _platform.api2wire_i64(height),
-            _platform.api2wire_i64(uvRowStride),
-            _platform.api2wire_i64(uvPixelStride)),
+            port_, _platform.api2wire_box_autoadd_image_data(img)),
         parseSuccessData: _wire2api_unit,
         constMeta: kStartKmeansTrainingConstMeta,
-        argValues: [ys, us, vs, width, height, uvRowStride, uvPixelStride],
+        argValues: [img],
         hint: hint,
       ));
 
   FlutterRustBridgeTaskConstMeta get kStartKmeansTrainingConstMeta =>
       const FlutterRustBridgeTaskConstMeta(
         debugName: "start_kmeans_training",
-        argNames: [
-          "ys",
-          "us",
-          "vs",
-          "width",
-          "height",
-          "uvRowStride",
-          "uvPixelStride"
-        ],
+        argNames: ["img"],
       );
 
-  Future<Uint8List> groundlineKMeans(
-          {required Uint8List ys,
-          required Uint8List us,
-          required Uint8List vs,
-          required int width,
-          required int height,
-          required int uvRowStride,
-          required int uvPixelStride,
-          dynamic hint}) =>
+  Future<Uint8List> groundlineKMeans({required ImageData img, dynamic hint}) =>
       _platform.executeNormal(FlutterRustBridgeTask(
         callFfi: (port_) => _platform.inner.wire_groundline_k_means(
-            port_,
-            _platform.api2wire_uint_8_list(ys),
-            _platform.api2wire_uint_8_list(us),
-            _platform.api2wire_uint_8_list(vs),
-            _platform.api2wire_i64(width),
-            _platform.api2wire_i64(height),
-            _platform.api2wire_i64(uvRowStride),
-            _platform.api2wire_i64(uvPixelStride)),
+            port_, _platform.api2wire_box_autoadd_image_data(img)),
         parseSuccessData: _wire2api_ZeroCopyBuffer_Uint8List,
         constMeta: kGroundlineKMeansConstMeta,
-        argValues: [ys, us, vs, width, height, uvRowStride, uvPixelStride],
+        argValues: [img],
         hint: hint,
       ));
 
   FlutterRustBridgeTaskConstMeta get kGroundlineKMeansConstMeta =>
       const FlutterRustBridgeTaskConstMeta(
         debugName: "groundline_k_means",
-        argNames: [
-          "ys",
-          "us",
-          "vs",
-          "width",
-          "height",
-          "uvRowStride",
-          "uvPixelStride"
-        ],
+        argNames: ["img"],
       );
 
   Future<CorrelationFlow> getCorrelationFlow(
@@ -416,6 +302,13 @@ class NativePlatform extends FlutterRustBridgeBase<NativeWire> {
   }
 
   @protected
+  ffi.Pointer<wire_ImageData> api2wire_box_autoadd_image_data(ImageData raw) {
+    final ptr = inner.new_box_autoadd_image_data_0();
+    _api_fill_to_wire_image_data(raw, ptr.ref);
+    return ptr;
+  }
+
+  @protected
   int api2wire_i64(int raw) {
     return raw;
   }
@@ -428,6 +321,20 @@ class NativePlatform extends FlutterRustBridgeBase<NativeWire> {
   }
 // Section: api_fill_to_wire
 
+  void _api_fill_to_wire_box_autoadd_image_data(
+      ImageData apiObj, ffi.Pointer<wire_ImageData> wireObj) {
+    _api_fill_to_wire_image_data(apiObj, wireObj.ref);
+  }
+
+  void _api_fill_to_wire_image_data(ImageData apiObj, wire_ImageData wireObj) {
+    wireObj.ys = api2wire_uint_8_list(apiObj.ys);
+    wireObj.us = api2wire_uint_8_list(apiObj.us);
+    wireObj.vs = api2wire_uint_8_list(apiObj.vs);
+    wireObj.width = api2wire_i64(apiObj.width);
+    wireObj.height = api2wire_i64(apiObj.height);
+    wireObj.uv_row_stride = api2wire_i64(apiObj.uvRowStride);
+    wireObj.uv_pixel_stride = api2wire_i64(apiObj.uvPixelStride);
+  }
 }
 
 // ignore_for_file: camel_case_types, non_constant_identifier_names, avoid_positional_boolean_parameters, annotate_overrides, constant_identifier_names
@@ -513,225 +420,89 @@ class NativeWire implements FlutterRustBridgeWireBase {
 
   void wire_yuv_rgba(
     int port_,
-    ffi.Pointer<wire_uint_8_list> ys,
-    ffi.Pointer<wire_uint_8_list> us,
-    ffi.Pointer<wire_uint_8_list> vs,
-    int width,
-    int height,
-    int uv_row_stride,
-    int uv_pixel_stride,
+    ffi.Pointer<wire_ImageData> img,
   ) {
     return _wire_yuv_rgba(
       port_,
-      ys,
-      us,
-      vs,
-      width,
-      height,
-      uv_row_stride,
-      uv_pixel_stride,
+      img,
     );
   }
 
   late final _wire_yuv_rgbaPtr = _lookup<
       ffi.NativeFunction<
           ffi.Void Function(
-              ffi.Int64,
-              ffi.Pointer<wire_uint_8_list>,
-              ffi.Pointer<wire_uint_8_list>,
-              ffi.Pointer<wire_uint_8_list>,
-              ffi.Int64,
-              ffi.Int64,
-              ffi.Int64,
-              ffi.Int64)>>('wire_yuv_rgba');
-  late final _wire_yuv_rgba = _wire_yuv_rgbaPtr.asFunction<
-      void Function(
-          int,
-          ffi.Pointer<wire_uint_8_list>,
-          ffi.Pointer<wire_uint_8_list>,
-          ffi.Pointer<wire_uint_8_list>,
-          int,
-          int,
-          int,
-          int)>();
+              ffi.Int64, ffi.Pointer<wire_ImageData>)>>('wire_yuv_rgba');
+  late final _wire_yuv_rgba = _wire_yuv_rgbaPtr
+      .asFunction<void Function(int, ffi.Pointer<wire_ImageData>)>();
 
   void wire_color_count(
     int port_,
-    ffi.Pointer<wire_uint_8_list> ys,
-    ffi.Pointer<wire_uint_8_list> us,
-    ffi.Pointer<wire_uint_8_list> vs,
-    int width,
-    int height,
-    int uv_row_stride,
-    int uv_pixel_stride,
+    ffi.Pointer<wire_ImageData> img,
   ) {
     return _wire_color_count(
       port_,
-      ys,
-      us,
-      vs,
-      width,
-      height,
-      uv_row_stride,
-      uv_pixel_stride,
+      img,
     );
   }
 
   late final _wire_color_countPtr = _lookup<
       ffi.NativeFunction<
           ffi.Void Function(
-              ffi.Int64,
-              ffi.Pointer<wire_uint_8_list>,
-              ffi.Pointer<wire_uint_8_list>,
-              ffi.Pointer<wire_uint_8_list>,
-              ffi.Int64,
-              ffi.Int64,
-              ffi.Int64,
-              ffi.Int64)>>('wire_color_count');
-  late final _wire_color_count = _wire_color_countPtr.asFunction<
-      void Function(
-          int,
-          ffi.Pointer<wire_uint_8_list>,
-          ffi.Pointer<wire_uint_8_list>,
-          ffi.Pointer<wire_uint_8_list>,
-          int,
-          int,
-          int,
-          int)>();
+              ffi.Int64, ffi.Pointer<wire_ImageData>)>>('wire_color_count');
+  late final _wire_color_count = _wire_color_countPtr
+      .asFunction<void Function(int, ffi.Pointer<wire_ImageData>)>();
 
   void wire_groundline_sample_overlay(
     int port_,
-    ffi.Pointer<wire_uint_8_list> ys,
-    ffi.Pointer<wire_uint_8_list> us,
-    ffi.Pointer<wire_uint_8_list> vs,
-    int width,
-    int height,
-    int uv_row_stride,
-    int uv_pixel_stride,
+    ffi.Pointer<wire_ImageData> img,
   ) {
     return _wire_groundline_sample_overlay(
       port_,
-      ys,
-      us,
-      vs,
-      width,
-      height,
-      uv_row_stride,
-      uv_pixel_stride,
+      img,
     );
   }
 
   late final _wire_groundline_sample_overlayPtr = _lookup<
       ffi.NativeFunction<
-          ffi.Void Function(
-              ffi.Int64,
-              ffi.Pointer<wire_uint_8_list>,
-              ffi.Pointer<wire_uint_8_list>,
-              ffi.Pointer<wire_uint_8_list>,
-              ffi.Int64,
-              ffi.Int64,
-              ffi.Int64,
-              ffi.Int64)>>('wire_groundline_sample_overlay');
+          ffi.Void Function(ffi.Int64,
+              ffi.Pointer<wire_ImageData>)>>('wire_groundline_sample_overlay');
   late final _wire_groundline_sample_overlay =
-      _wire_groundline_sample_overlayPtr.asFunction<
-          void Function(
-              int,
-              ffi.Pointer<wire_uint_8_list>,
-              ffi.Pointer<wire_uint_8_list>,
-              ffi.Pointer<wire_uint_8_list>,
-              int,
-              int,
-              int,
-              int)>();
+      _wire_groundline_sample_overlayPtr
+          .asFunction<void Function(int, ffi.Pointer<wire_ImageData>)>();
 
   void wire_start_kmeans_training(
     int port_,
-    ffi.Pointer<wire_uint_8_list> ys,
-    ffi.Pointer<wire_uint_8_list> us,
-    ffi.Pointer<wire_uint_8_list> vs,
-    int width,
-    int height,
-    int uv_row_stride,
-    int uv_pixel_stride,
+    ffi.Pointer<wire_ImageData> img,
   ) {
     return _wire_start_kmeans_training(
       port_,
-      ys,
-      us,
-      vs,
-      width,
-      height,
-      uv_row_stride,
-      uv_pixel_stride,
+      img,
     );
   }
 
   late final _wire_start_kmeans_trainingPtr = _lookup<
       ffi.NativeFunction<
-          ffi.Void Function(
-              ffi.Int64,
-              ffi.Pointer<wire_uint_8_list>,
-              ffi.Pointer<wire_uint_8_list>,
-              ffi.Pointer<wire_uint_8_list>,
-              ffi.Int64,
-              ffi.Int64,
-              ffi.Int64,
-              ffi.Int64)>>('wire_start_kmeans_training');
-  late final _wire_start_kmeans_training =
-      _wire_start_kmeans_trainingPtr.asFunction<
-          void Function(
-              int,
-              ffi.Pointer<wire_uint_8_list>,
-              ffi.Pointer<wire_uint_8_list>,
-              ffi.Pointer<wire_uint_8_list>,
-              int,
-              int,
-              int,
-              int)>();
+          ffi.Void Function(ffi.Int64,
+              ffi.Pointer<wire_ImageData>)>>('wire_start_kmeans_training');
+  late final _wire_start_kmeans_training = _wire_start_kmeans_trainingPtr
+      .asFunction<void Function(int, ffi.Pointer<wire_ImageData>)>();
 
   void wire_groundline_k_means(
     int port_,
-    ffi.Pointer<wire_uint_8_list> ys,
-    ffi.Pointer<wire_uint_8_list> us,
-    ffi.Pointer<wire_uint_8_list> vs,
-    int width,
-    int height,
-    int uv_row_stride,
-    int uv_pixel_stride,
+    ffi.Pointer<wire_ImageData> img,
   ) {
     return _wire_groundline_k_means(
       port_,
-      ys,
-      us,
-      vs,
-      width,
-      height,
-      uv_row_stride,
-      uv_pixel_stride,
+      img,
     );
   }
 
   late final _wire_groundline_k_meansPtr = _lookup<
       ffi.NativeFunction<
-          ffi.Void Function(
-              ffi.Int64,
-              ffi.Pointer<wire_uint_8_list>,
-              ffi.Pointer<wire_uint_8_list>,
-              ffi.Pointer<wire_uint_8_list>,
-              ffi.Int64,
-              ffi.Int64,
-              ffi.Int64,
-              ffi.Int64)>>('wire_groundline_k_means');
-  late final _wire_groundline_k_means = _wire_groundline_k_meansPtr.asFunction<
-      void Function(
-          int,
-          ffi.Pointer<wire_uint_8_list>,
-          ffi.Pointer<wire_uint_8_list>,
-          ffi.Pointer<wire_uint_8_list>,
-          int,
-          int,
-          int,
-          int)>();
+          ffi.Void Function(ffi.Int64,
+              ffi.Pointer<wire_ImageData>)>>('wire_groundline_k_means');
+  late final _wire_groundline_k_means = _wire_groundline_k_meansPtr
+      .asFunction<void Function(int, ffi.Pointer<wire_ImageData>)>();
 
   void wire_get_correlation_flow(
     int port_,
@@ -810,6 +581,16 @@ class NativeWire implements FlutterRustBridgeWireBase {
   late final _wire_parse_sensor_data = _wire_parse_sensor_dataPtr
       .asFunction<void Function(int, ffi.Pointer<wire_uint_8_list>)>();
 
+  ffi.Pointer<wire_ImageData> new_box_autoadd_image_data_0() {
+    return _new_box_autoadd_image_data_0();
+  }
+
+  late final _new_box_autoadd_image_data_0Ptr =
+      _lookup<ffi.NativeFunction<ffi.Pointer<wire_ImageData> Function()>>(
+          'new_box_autoadd_image_data_0');
+  late final _new_box_autoadd_image_data_0 = _new_box_autoadd_image_data_0Ptr
+      .asFunction<ffi.Pointer<wire_ImageData> Function()>();
+
   ffi.Pointer<wire_uint_8_list> new_uint_8_list_0(
     int len,
   ) {
@@ -845,6 +626,26 @@ class wire_uint_8_list extends ffi.Struct {
 
   @ffi.Int32()
   external int len;
+}
+
+class wire_ImageData extends ffi.Struct {
+  external ffi.Pointer<wire_uint_8_list> ys;
+
+  external ffi.Pointer<wire_uint_8_list> us;
+
+  external ffi.Pointer<wire_uint_8_list> vs;
+
+  @ffi.Int64()
+  external int width;
+
+  @ffi.Int64()
+  external int height;
+
+  @ffi.Int64()
+  external int uv_row_stride;
+
+  @ffi.Int64()
+  external int uv_pixel_stride;
 }
 
 typedef DartPostCObjectFnType = ffi.Pointer<
