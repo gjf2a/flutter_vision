@@ -7,6 +7,14 @@ import 'dart:async';
 import 'package:flutter_rust_bridge/flutter_rust_bridge.dart';
 
 abstract class Native {
+  Future<bool> kmeansReady({dynamic hint});
+
+  FlutterRustBridgeTaskConstMeta get kKmeansReadyConstMeta;
+
+  Future<int> trainingTime({dynamic hint});
+
+  FlutterRustBridgeTaskConstMeta get kTrainingTimeConstMeta;
+
   Future<Uint8List> intensityRgba(
       {required Uint8List intensities, dynamic hint});
 
@@ -47,6 +55,18 @@ abstract class Native {
       dynamic hint});
 
   FlutterRustBridgeTaskConstMeta get kGroundlineSampleOverlayConstMeta;
+
+  Future<void> startKmeansTraining(
+      {required Uint8List ys,
+      required Uint8List us,
+      required Uint8List vs,
+      required int width,
+      required int height,
+      required int uvRowStride,
+      required int uvPixelStride,
+      dynamic hint});
+
+  FlutterRustBridgeTaskConstMeta get kStartKmeansTrainingConstMeta;
 
   Future<Uint8List> groundlineKMeans(
       {required Uint8List ys,

@@ -23,6 +23,36 @@ class NativeImpl implements Native {
   factory NativeImpl.wasm(FutureOr<WasmModule> module) =>
       NativeImpl(module as ExternalLibrary);
   NativeImpl.raw(this._platform);
+  Future<bool> kmeansReady({dynamic hint}) =>
+      _platform.executeNormal(FlutterRustBridgeTask(
+        callFfi: (port_) => _platform.inner.wire_kmeans_ready(port_),
+        parseSuccessData: _wire2api_bool,
+        constMeta: kKmeansReadyConstMeta,
+        argValues: [],
+        hint: hint,
+      ));
+
+  FlutterRustBridgeTaskConstMeta get kKmeansReadyConstMeta =>
+      const FlutterRustBridgeTaskConstMeta(
+        debugName: "kmeans_ready",
+        argNames: [],
+      );
+
+  Future<int> trainingTime({dynamic hint}) =>
+      _platform.executeNormal(FlutterRustBridgeTask(
+        callFfi: (port_) => _platform.inner.wire_training_time(port_),
+        parseSuccessData: _wire2api_i64,
+        constMeta: kTrainingTimeConstMeta,
+        argValues: [],
+        hint: hint,
+      ));
+
+  FlutterRustBridgeTaskConstMeta get kTrainingTimeConstMeta =>
+      const FlutterRustBridgeTaskConstMeta(
+        debugName: "training_time",
+        argNames: [],
+      );
+
   Future<Uint8List> intensityRgba(
           {required Uint8List intensities, dynamic hint}) =>
       _platform.executeNormal(FlutterRustBridgeTask(
@@ -157,6 +187,45 @@ class NativeImpl implements Native {
         ],
       );
 
+  Future<void> startKmeansTraining(
+          {required Uint8List ys,
+          required Uint8List us,
+          required Uint8List vs,
+          required int width,
+          required int height,
+          required int uvRowStride,
+          required int uvPixelStride,
+          dynamic hint}) =>
+      _platform.executeNormal(FlutterRustBridgeTask(
+        callFfi: (port_) => _platform.inner.wire_start_kmeans_training(
+            port_,
+            _platform.api2wire_uint_8_list(ys),
+            _platform.api2wire_uint_8_list(us),
+            _platform.api2wire_uint_8_list(vs),
+            _platform.api2wire_i64(width),
+            _platform.api2wire_i64(height),
+            _platform.api2wire_i64(uvRowStride),
+            _platform.api2wire_i64(uvPixelStride)),
+        parseSuccessData: _wire2api_unit,
+        constMeta: kStartKmeansTrainingConstMeta,
+        argValues: [ys, us, vs, width, height, uvRowStride, uvPixelStride],
+        hint: hint,
+      ));
+
+  FlutterRustBridgeTaskConstMeta get kStartKmeansTrainingConstMeta =>
+      const FlutterRustBridgeTaskConstMeta(
+        debugName: "start_kmeans_training",
+        argNames: [
+          "ys",
+          "us",
+          "vs",
+          "width",
+          "height",
+          "uvRowStride",
+          "uvPixelStride"
+        ],
+      );
+
   Future<Uint8List> groundlineKMeans(
           {required Uint8List ys,
           required Uint8List us,
@@ -280,6 +349,10 @@ class NativeImpl implements Native {
     return raw as Uint8List;
   }
 
+  bool _wire2api_bool(dynamic raw) {
+    return raw as bool;
+  }
+
   CorrelationFlow _wire2api_correlation_flow(dynamic raw) {
     final arr = raw as List<dynamic>;
     if (arr.length != 2)
@@ -392,6 +465,34 @@ class NativeWire implements FlutterRustBridgeWireBase {
           'store_dart_post_cobject');
   late final _store_dart_post_cobject = _store_dart_post_cobjectPtr
       .asFunction<void Function(DartPostCObjectFnType)>();
+
+  void wire_kmeans_ready(
+    int port_,
+  ) {
+    return _wire_kmeans_ready(
+      port_,
+    );
+  }
+
+  late final _wire_kmeans_readyPtr =
+      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64)>>(
+          'wire_kmeans_ready');
+  late final _wire_kmeans_ready =
+      _wire_kmeans_readyPtr.asFunction<void Function(int)>();
+
+  void wire_training_time(
+    int port_,
+  ) {
+    return _wire_training_time(
+      port_,
+    );
+  }
+
+  late final _wire_training_timePtr =
+      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64)>>(
+          'wire_training_time');
+  late final _wire_training_time =
+      _wire_training_timePtr.asFunction<void Function(int)>();
 
   void wire_intensity_rgba(
     int port_,
@@ -533,6 +634,51 @@ class NativeWire implements FlutterRustBridgeWireBase {
               ffi.Int64)>>('wire_groundline_sample_overlay');
   late final _wire_groundline_sample_overlay =
       _wire_groundline_sample_overlayPtr.asFunction<
+          void Function(
+              int,
+              ffi.Pointer<wire_uint_8_list>,
+              ffi.Pointer<wire_uint_8_list>,
+              ffi.Pointer<wire_uint_8_list>,
+              int,
+              int,
+              int,
+              int)>();
+
+  void wire_start_kmeans_training(
+    int port_,
+    ffi.Pointer<wire_uint_8_list> ys,
+    ffi.Pointer<wire_uint_8_list> us,
+    ffi.Pointer<wire_uint_8_list> vs,
+    int width,
+    int height,
+    int uv_row_stride,
+    int uv_pixel_stride,
+  ) {
+    return _wire_start_kmeans_training(
+      port_,
+      ys,
+      us,
+      vs,
+      width,
+      height,
+      uv_row_stride,
+      uv_pixel_stride,
+    );
+  }
+
+  late final _wire_start_kmeans_trainingPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Void Function(
+              ffi.Int64,
+              ffi.Pointer<wire_uint_8_list>,
+              ffi.Pointer<wire_uint_8_list>,
+              ffi.Pointer<wire_uint_8_list>,
+              ffi.Int64,
+              ffi.Int64,
+              ffi.Int64,
+              ffi.Int64)>>('wire_start_kmeans_training');
+  late final _wire_start_kmeans_training =
+      _wire_start_kmeans_trainingPtr.asFunction<
           void Function(
               int,
               ffi.Pointer<wire_uint_8_list>,
