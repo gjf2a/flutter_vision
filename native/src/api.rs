@@ -8,11 +8,27 @@ use flutter_rust_bridge::support::lazy_static;
 use std::sync::Mutex;
 use kmeans::Kmeans;
 
+
 type RgbTriple = (u8, u8, u8);
+
+fn rgb_triple_distance(rgb3a: &RgbTriple, rgb3b: &RgbTriple) -> f64 {
+    (rgb3a.0 as f64 - rgb3b.0 as f64).powf(2.0) + (rgb3a.1 as f64 - rgb3b.1 as f64).powf(2.0) + (rgb3a.2 as f64 - rgb3b.2 as f64).powf(2.0)
+}
+
+fn clamp2u8(value: u64) -> u8 {
+    max(0, min(value, u8::MAX as u64)) as u8
+}
+
+fn rgb_triple_mean(triples: &Vec<&RgbTriple>) -> RgbTriple {
+    let total = triples.iter().fold((0, 0, 0), |s, t| (s.0 + t.0 as u64, s.1 + t.1 as u64, s.2 + t.2 as u64));
+    let count = triples.len() as u64;
+    (clamp2u8(total.0 / count), clamp2u8(total.1 / count), clamp2u8(total.2 /count))
+}
 
 lazy_static! {
     static ref POS: Mutex<RobotSensorPosition> = Mutex::new(RobotSensorPosition::new(BOT));
-    static ref COLOR_MEANS: Mutex<Option<Kmeans<RGBColor, f64, fn (&RGBColor,&RGBColor)->f64>>> = Mutex::new(None);
+    //static ref COLOR_MEANS: Mutex<Option<Kmeans<RGBColor, f64, fn (&RGBColor,&RGBColor)->f64>>> = Mutex::new(None);
+    static ref COLOR_MEANS: Mutex<Option<Kmeans<RgbTriple, f64, fn (&RgbTriple,&RgbTriple)->f64>>> = Mutex::new(None);
     static ref KMEANS_READY: AtomicBool = AtomicBool::new(false);
     static ref TRAINING_TIME: AtomicU64 = AtomicU64::new(0);
 }
@@ -102,13 +118,15 @@ const NUM_COLOR_CLUSTERS: usize = 2;
 pub fn start_kmeans_training(img: ImageData) {
     std::thread::spawn(move || {
         let start = Instant::now();
-        let image = scarlet_yuv_rgb(&img);
+        //let image = scarlet_yuv_rgb(&img);
+        let image = simple_yuv_rgb(&img);
         let mut color_means = COLOR_MEANS.lock().unwrap();
-        *color_means = Some( Kmeans::new(NUM_COLOR_CLUSTERS, &image, RGBColor::distance, |items| {
+        /* *color_means = Some(Kmeans::new(NUM_COLOR_CLUSTERS, &image, RGBColor::distance, |items| {
             let item = *items[0];
             let others = items[1..].iter().copied().copied().collect::<Vec<_>>();
             item.average(others).into()
-        }));
+        }));*/
+        *color_means = Some(Kmeans::new(NUM_COLOR_CLUSTERS, &image, rgb_triple_distance, rgb_triple_mean));
         KMEANS_READY.store(true, Ordering::SeqCst);
         TRAINING_TIME.store(start.elapsed().as_millis() as u64, Ordering::SeqCst);
     });
@@ -116,9 +134,11 @@ pub fn start_kmeans_training(img: ImageData) {
  
 pub fn groundline_k_means(img: ImageData) -> ZeroCopyBuffer<Vec<u8>> {
     if kmeans_ready() {
-        let image = scarlet_yuv_rgb(&img);
-        let mut result = vec![];
-        COLOR_MEANS.lock().unwrap().as_ref().map(|kmeans| {
+        let image = simple_yuv_rgb(&img);
+        ZeroCopyBuffer(COLOR_MEANS.lock().unwrap().as_ref().map_or_else(|| {
+            (0..(img.height * img.width * 4)).map(|i| if i % 4 == 0 {u8::MAX} else {0}).collect()
+        }, |kmeans| {
+            let mut result = vec![];
             for color in image {
                 let mean = kmeans.best_matching_mean(&color);
                 let bytes: (u8, u8, u8) = mean.into();
@@ -127,14 +147,20 @@ pub fn groundline_k_means(img: ImageData) -> ZeroCopyBuffer<Vec<u8>> {
                 result.push(bytes.2);
                 result.push(u8::MAX);
             }
-        });
-        ZeroCopyBuffer(result)
+            result
+        }))
     } else {
         groundline_sample_overlay(img)
     }
 }
 
 //fn extract_pixels_from(colors: &Vec<RGBColor>, width: i64, ul_corner: (usize, usize), dimensions: (usize, usize)) -> 
+
+fn simple_yuv_rgb(img: &ImageData) -> Vec<RgbTriple> {
+    let mut result = vec![];
+    generic_yuv_rgba(|rgb| { result.push(rgb)}, img);
+    result
+}
 
 fn scarlet_yuv_rgb(img: &ImageData) -> Vec<RGBColor> {
     let mut result = Vec::new();
