@@ -1,7 +1,6 @@
 use std::{cmp::{max, min}, collections::BTreeSet, sync::atomic::{Ordering, AtomicBool, AtomicU64}, time::Instant};
 use flutter_rust_bridge::{ZeroCopyBuffer};
 use correlation_flow::micro_rfft::{COL_DIM, ROW_DIM, MicroFftContext};
-use scarlet::prelude::{Color, RGBColor, ColorPoint};
 use std::collections::HashMap;
 pub use particle_filter::sonar3bot::{RobotSensorPosition, BOT, MotorData};
 use flutter_rust_bridge::support::lazy_static;
@@ -27,7 +26,6 @@ fn rgb_triple_mean(triples: &Vec<&RgbTriple>) -> RgbTriple {
 
 lazy_static! {
     static ref POS: Mutex<RobotSensorPosition> = Mutex::new(RobotSensorPosition::new(BOT));
-    //static ref COLOR_MEANS: Mutex<Option<Kmeans<RGBColor, f64, fn (&RGBColor,&RGBColor)->f64>>> = Mutex::new(None);
     static ref COLOR_MEANS: Mutex<Option<Kmeans<RgbTriple, f64, fn (&RgbTriple,&RgbTriple)->f64>>> = Mutex::new(None);
     static ref KMEANS_READY: AtomicBool = AtomicBool::new(false);
     static ref TRAINING_TIME: AtomicU64 = AtomicU64::new(0);
@@ -121,11 +119,6 @@ pub fn start_kmeans_training(img: ImageData) {
         //let image = scarlet_yuv_rgb(&img);
         let image = simple_yuv_rgb(&img);
         let mut color_means = COLOR_MEANS.lock().unwrap();
-        /* *color_means = Some(Kmeans::new(NUM_COLOR_CLUSTERS, &image, RGBColor::distance, |items| {
-            let item = *items[0];
-            let others = items[1..].iter().copied().copied().collect::<Vec<_>>();
-            item.average(others).into()
-        }));*/
         *color_means = Some(Kmeans::new(NUM_COLOR_CLUSTERS, &image, rgb_triple_distance, rgb_triple_mean));
         KMEANS_READY.store(true, Ordering::SeqCst);
         TRAINING_TIME.store(start.elapsed().as_millis() as u64, Ordering::SeqCst);
@@ -159,14 +152,6 @@ pub fn groundline_k_means(img: ImageData) -> ZeroCopyBuffer<Vec<u8>> {
 fn simple_yuv_rgb(img: &ImageData) -> Vec<RgbTriple> {
     let mut result = vec![];
     generic_yuv_rgba(|rgb| { result.push(rgb)}, img);
-    result
-}
-
-fn scarlet_yuv_rgb(img: &ImageData) -> Vec<RGBColor> {
-    let mut result = Vec::new();
-    generic_yuv_rgba(|rgb| {
-        result.push(rgb.into());
-    }, img);
     result
 }
 
