@@ -107,6 +107,19 @@ fn wire_start_kmeans_training_impl(port_: MessagePort, img: impl Wire2Api<ImageD
         },
     )
 }
+fn wire_color_clusterer_impl(port_: MessagePort, img: impl Wire2Api<ImageData> + UnwindSafe) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap(
+        WrapInfo {
+            debug_name: "color_clusterer",
+            port: Some(port_),
+            mode: FfiCallMode::Normal,
+        },
+        move || {
+            let api_img = img.wire2api();
+            move |task_callback| Ok(color_clusterer(api_img))
+        },
+    )
+}
 fn wire_groundline_k_means_impl(port_: MessagePort, img: impl Wire2Api<ImageData> + UnwindSafe) {
     FLUTTER_RUST_BRIDGE_HANDLER.wrap(
         WrapInfo {

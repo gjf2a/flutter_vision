@@ -37,6 +37,11 @@ pub extern "C" fn wire_start_kmeans_training(port_: i64, img: *mut wire_ImageDat
 }
 
 #[no_mangle]
+pub extern "C" fn wire_color_clusterer(port_: i64, img: *mut wire_ImageData) {
+    wire_color_clusterer_impl(port_, img)
+}
+
+#[no_mangle]
 pub extern "C" fn wire_groundline_k_means(port_: i64, img: *mut wire_ImageData) {
     wire_groundline_k_means_impl(port_, img)
 }

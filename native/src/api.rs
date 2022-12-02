@@ -95,28 +95,68 @@ const UPPER_SAMPLE_WIDTH: f64 = 0.25;
 const LOWER_SAMPLE_WIDTH: f64 = 0.3;
 const LOWER_SAMPLE_HEIGHT: f64 = 0.25;
 
+#[derive(Copy, Clone, Debug)]
+struct Rect {
+    ul_corner: (i64, i64), dimensions: (i64, i64),
+}
+
+impl Rect {
+    fn place_overlay(&self, image: &mut Vec<u8>, width: i64, color: RgbTriple) {
+        for x in self.ul_corner.0..self.ul_corner.0 + self.dimensions.0 {
+            plot(image, x, self.ul_corner.1, width, color);
+            plot(image, x, self.ul_corner.1 + self.dimensions.1 - 1, width, color);
+        }
+        for y in self.ul_corner.1..self.ul_corner.1 + self.dimensions.1 {
+            plot(image, self.ul_corner.0, y, width, color);
+            plot(image, self.ul_corner.0 + self.dimensions.0 - 1, y, width, color);
+        }
+    }
+}
+
+#[derive(Copy, Clone, Debug)]
+struct GroundlineOverlay {
+    upper: [Rect; 2],
+    lower: Rect,
+    width: i64, 
+}
+
+impl GroundlineOverlay {
+    fn new(img: &ImageData) -> Self {
+        let upper_max_y = (img.height as f64 * UPPER_SAMPLE_HEIGHT) as i64;
+        let upper_left_x_end = (img.width as f64 * UPPER_SAMPLE_WIDTH) as i64;
+        let upper_right_x_start = img.width - upper_left_x_end;
+        let lower_x_start = (img.width as f64 * (0.5 - LOWER_SAMPLE_WIDTH / 2.0)) as i64;
+        let lower_width = (img.width as f64 * LOWER_SAMPLE_WIDTH) as i64;
+        let lower_height = (img.height as f64 * LOWER_SAMPLE_HEIGHT) as i64;
+        let lower_y_start = (img.height as f64 * (1.0 - LOWER_SAMPLE_HEIGHT)) as i64;
+        Self {
+            upper: [Rect {ul_corner: (0, 0), dimensions: (upper_left_x_end, upper_max_y)}, Rect {ul_corner: (upper_right_x_start, 0), dimensions: (upper_left_x_end, upper_max_y)}],
+            lower: Rect {ul_corner: (lower_x_start, lower_y_start), dimensions: (lower_width, lower_height)},
+            width: img.width,
+        }
+    }
+
+    fn place_overlay(&self, image: &mut Vec<u8>) {
+        let white = (255, 255, 255);
+        self.upper[0].place_overlay(image, self.width, white);
+        self.upper[1].place_overlay(image, self.width, white);
+        self.lower.place_overlay(image, self.width, white);    
+    }
+}
+
 pub fn groundline_sample_overlay(img: ImageData) -> ZeroCopyBuffer<Vec<u8>> {
+    let overlay = GroundlineOverlay::new(&img);
     let mut image = inner_yuv_rgba(&img);
-    let upper_max_y = (img.height as f64 * UPPER_SAMPLE_HEIGHT) as i64;
-    let upper_left_x_end = (img.width as f64 * UPPER_SAMPLE_WIDTH) as i64;
-    let upper_right_x_start = img.width - upper_left_x_end;
-    let lower_x_start = (img.width as f64 * (0.5 - LOWER_SAMPLE_WIDTH / 2.0)) as i64;
-    let lower_width = (img.width as f64 * LOWER_SAMPLE_WIDTH) as i64;
-    let lower_height = (img.height as f64 * LOWER_SAMPLE_HEIGHT) as i64;
-    let lower_y_start = (img.height as f64 * (1.0 - LOWER_SAMPLE_HEIGHT)) as i64;
-    let white = (255, 255, 255);
-    overlay_rectangle_on(&mut image, img.width, (0, 0), (upper_left_x_end, upper_max_y), white);
-    overlay_rectangle_on(&mut image, img.width, (upper_right_x_start, 0), (upper_left_x_end, upper_max_y), white);
-    overlay_rectangle_on(&mut image, img.width, (lower_x_start, lower_y_start), (lower_width, lower_height), white);
+    overlay.place_overlay(&mut image);
     ZeroCopyBuffer(image)
 }
 
-const NUM_COLOR_CLUSTERS: usize = 2;
+// 16 clusters yields about 9 frames per second for color filtering on a 176x144 image.
+const NUM_COLOR_CLUSTERS: usize = 16;
 
 pub fn start_kmeans_training(img: ImageData) {
     std::thread::spawn(move || {
         let start = Instant::now();
-        //let image = scarlet_yuv_rgb(&img);
         let image = simple_yuv_rgb(&img);
         let mut color_means = COLOR_MEANS.lock().unwrap();
         *color_means = Some(Kmeans::new(NUM_COLOR_CLUSTERS, &image, rgb_triple_distance, rgb_triple_mean));
@@ -124,24 +164,36 @@ pub fn start_kmeans_training(img: ImageData) {
         TRAINING_TIME.store(start.elapsed().as_millis() as u64, Ordering::SeqCst);
     });
 }
+
+fn cluster_colored(img: ImageData) -> Vec<u8> {
+    let image = simple_yuv_rgb(&img);
+    COLOR_MEANS.lock().unwrap().as_ref().map_or_else(|| {
+        (0..(img.height * img.width * 4)).map(|i| if i % 4 == 0 {u8::MAX} else {0}).collect()
+    }, |kmeans| {
+        let mut result = vec![];
+        for color in image {
+            let mean = kmeans.best_matching_mean(&color);
+            let bytes: (u8, u8, u8) = mean.into();
+            result.push(bytes.0);
+            result.push(bytes.1);
+            result.push(bytes.2);
+            result.push(u8::MAX);
+        }
+        result
+    })
+}
+
+pub fn color_clusterer(img: ImageData) -> ZeroCopyBuffer<Vec<u8>> {
+    if kmeans_ready() {
+        ZeroCopyBuffer(cluster_colored(img))
+    } else {
+        yuv_rgba(img)
+    }
+}
  
 pub fn groundline_k_means(img: ImageData) -> ZeroCopyBuffer<Vec<u8>> {
     if kmeans_ready() {
-        let image = simple_yuv_rgb(&img);
-        ZeroCopyBuffer(COLOR_MEANS.lock().unwrap().as_ref().map_or_else(|| {
-            (0..(img.height * img.width * 4)).map(|i| if i % 4 == 0 {u8::MAX} else {0}).collect()
-        }, |kmeans| {
-            let mut result = vec![];
-            for color in image {
-                let mean = kmeans.best_matching_mean(&color);
-                let bytes: (u8, u8, u8) = mean.into();
-                result.push(bytes.0);
-                result.push(bytes.1);
-                result.push(bytes.2);
-                result.push(u8::MAX);
-            }
-            result
-        }))
+        ZeroCopyBuffer(cluster_colored(img))
     } else {
         groundline_sample_overlay(img)
     }
@@ -202,17 +254,6 @@ fn plot(image: &mut Vec<u8>, x: i64, y: i64, width: i64, color: RgbTriple) {
 fn overlay_points_on(image: &mut Vec<u8>, width: i64, points: &Vec<(i64,i64)>, color: RgbTriple) {
     for (x, y) in points.iter() {
         plot(image, *x, *y, width, color);
-    }
-}
-
-fn overlay_rectangle_on(image: &mut Vec<u8>, width: i64, ul_corner: (i64, i64), dimensions: (i64, i64), color: RgbTriple) {
-    for x in ul_corner.0..ul_corner.0 + dimensions.0 {
-        plot(image, x, ul_corner.1, width, color);
-        plot(image, x, ul_corner.1 + dimensions.1 - 1, width, color);
-    }
-    for y in ul_corner.1..ul_corner.1 + dimensions.1 {
-        plot(image, ul_corner.0, y, width, color);
-        plot(image, ul_corner.0 + dimensions.0 - 1, y, width, color);
     }
 }
 
