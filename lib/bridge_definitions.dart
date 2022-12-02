@@ -37,6 +37,10 @@ abstract class Native {
 
   FlutterRustBridgeTaskConstMeta get kStartKmeansTrainingConstMeta;
 
+  Future<Uint8List> colorClusterer({required ImageData img, dynamic hint});
+
+  FlutterRustBridgeTaskConstMeta get kColorClustererConstMeta;
+
   Future<Uint8List> groundlineKMeans({required ImageData img, dynamic hint});
 
   FlutterRustBridgeTaskConstMeta get kGroundlineKMeansConstMeta;

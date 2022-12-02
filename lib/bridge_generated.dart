@@ -135,6 +135,22 @@ class NativeImpl implements Native {
         argNames: ["img"],
       );
 
+  Future<Uint8List> colorClusterer({required ImageData img, dynamic hint}) =>
+      _platform.executeNormal(FlutterRustBridgeTask(
+        callFfi: (port_) => _platform.inner.wire_color_clusterer(
+            port_, _platform.api2wire_box_autoadd_image_data(img)),
+        parseSuccessData: _wire2api_ZeroCopyBuffer_Uint8List,
+        constMeta: kColorClustererConstMeta,
+        argValues: [img],
+        hint: hint,
+      ));
+
+  FlutterRustBridgeTaskConstMeta get kColorClustererConstMeta =>
+      const FlutterRustBridgeTaskConstMeta(
+        debugName: "color_clusterer",
+        argNames: ["img"],
+      );
+
   Future<Uint8List> groundlineKMeans({required ImageData img, dynamic hint}) =>
       _platform.executeNormal(FlutterRustBridgeTask(
         callFfi: (port_) => _platform.inner.wire_groundline_k_means(
@@ -485,6 +501,23 @@ class NativeWire implements FlutterRustBridgeWireBase {
           ffi.Void Function(ffi.Int64,
               ffi.Pointer<wire_ImageData>)>>('wire_start_kmeans_training');
   late final _wire_start_kmeans_training = _wire_start_kmeans_trainingPtr
+      .asFunction<void Function(int, ffi.Pointer<wire_ImageData>)>();
+
+  void wire_color_clusterer(
+    int port_,
+    ffi.Pointer<wire_ImageData> img,
+  ) {
+    return _wire_color_clusterer(
+      port_,
+      img,
+    );
+  }
+
+  late final _wire_color_clustererPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Void Function(
+              ffi.Int64, ffi.Pointer<wire_ImageData>)>>('wire_color_clusterer');
+  late final _wire_color_clusterer = _wire_color_clustererPtr
       .asFunction<void Function(int, ffi.Pointer<wire_ImageData>)>();
 
   void wire_groundline_k_means(
