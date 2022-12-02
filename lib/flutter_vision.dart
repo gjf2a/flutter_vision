@@ -43,6 +43,11 @@ class CameraImagePainter extends CustomPainter {
   int height() {return _height;}
   bool ready() {return _ready;}
 
+  void resetFps() {
+    _fps = 0.0;
+    _frameCount = 0;
+  }
+
   @override
   void paint(Canvas canvas, Size size) {
     if (_initialized) {
