@@ -23,25 +23,26 @@ class CameraImagePainter extends CustomPainter {
   CameraImagePainter(this.imageMaker);
 
   Future<void> setImage(CameraImage img) async {
-    _ready = false;
-    if (!_initialized) {
-      _start = DateTime.now();
-      _initialized = true;
+    if (_ready) {
+      _ready = false;
+      if (!_initialized) {
+        _start = DateTime.now();
+        _initialized = true;
+      }
+      _lastImage = await imageMaker(img);
+      _width = _lastImage.width;
+      _height = _lastImage.height;
+      _frameCount += 1;
+      Duration elapsed = DateTime.now().difference(_start);
+      _fps = _frameCount / elapsed.inSeconds;
+      _ready = true;
     }
-    _lastImage = await imageMaker(img);
-    _width = _lastImage.width;
-    _height = _lastImage.height;
-    _frameCount += 1;
-    Duration elapsed = DateTime.now().difference(_start);
-    _fps = _frameCount / elapsed.inSeconds;
-    _ready = true;
   }
 
   double fps() {return _fps;}
   int frameCount() {return _frameCount;}
   int width() {return _width;}
   int height() {return _height;}
-  bool ready() {return _ready;}
 
   @override
   void paint(Canvas canvas, Size size) {
